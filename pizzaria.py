@@ -166,57 +166,47 @@ if aba == "PDV - Pedidos":
 
 # --- TELA: CARDÁPIO ---
 # --- TELA: CARDÁPIO (GESTÃO COMPLETA) ---
+# --- TELA: CARDÁPIO (EDIÇÃO E EXCLUSÃO) ---
 elif aba == "Cardápio":
     st.header("⚙️ Gestão de Cardápio")
     
     tab_p, tab_b, tab_be = st.tabs(["🍕 Pizzas", "🧀 Bordas", "🥤 Bebidas"])
 
-    # --- ABA PIZZAS ---
+    # Função Auxiliar para Gerenciar Categorias (Evita repetição de código)
+    def gerenciar_categoria(titulo, chave_session, arquivo, col_nome):
+        st.subheader(f"Gerenciar {titulo}")
+        
+        # Converte o dicionário em DataFrame para o editor
+        df = pd.DataFrame(list(st.session_state[chave_session].items()), columns=[col_nome, "Preço"])
+        
+        st.info(f"💡 Dica: Clique duas vezes na célula para EDITAR. Selecione a linha e aperte 'Delete' ou use o ícone de lixo para APAGAR.")
+        
+        # O data_editor permite editar, adicionar e deletar linhas nativamente
+        df_editado = st.data_editor(
+            df, 
+            num_rows="dynamic", # Permite adicionar e apagar linhas
+            use_container_width=True,
+            key=f"editor_{chave_session}"
+        )
+        
+        if st.button(f"💾 Salvar Alterações em {titulo}", key=f"save_{chave_session}"):
+            # Converte de volta para dicionário e salva
+            # Remove linhas vazias ou com nome nulo
+            novo_dict = {row[col_nome]: row["Preço"] for _, row in df_editado.iterrows() if row[col_nome]}
+            
+            st.session_state[chave_session] = novo_dict
+            salvar_dados(arquivo, st.session_state[chave_session])
+            st.success(f"✅ {titulo} atualizado e salvo permanentemente!")
+            st.rerun()
+
     with tab_p:
-        with st.form("add_pizza", clear_on_submit=True):
-            col1, col2 = st.columns(2)
-            novo_s = col1.text_input("Nome da Pizza")
-            preco_s = col2.number_input("Preço (R$)", min_value=0.0)
-            if st.form_submit_button("➕ Adicionar Pizza"):
-                if novo_s:
-                    st.session_state.pizzas[novo_s] = preco_s
-                    salvar_dados('pizzas.json', st.session_state.pizzas)
-                    st.success(f"{novo_s} adicionada!")
-                    st.rerun()
+        gerenciar_categoria("Pizzas", "pizzas", "pizzas.json", "Sabor")
 
-        st.write("---")
-        df_p = pd.DataFrame(list(st.session_state.pizzas.items()), columns=["Sabor", "Preço"])
-        st.dataframe(df_p, use_container_width=True)
-
-    # --- ABA BORDAS ---
     with tab_b:
-        with st.form("add_borda", clear_on_submit=True):
-            col1, col2 = st.columns(2)
-            nova_b = col1.text_input("Tipo de Borda")
-            preco_b = col2.number_input("Preço Adicional (R$)", min_value=0.0)
-            if st.form_submit_button("➕ Adicionar Borda"):
-                if nova_b:
-                    st.session_state.bordas[nova_b] = preco_b
-                    salvar_dados('bordas.json', st.session_state.bordas)
-                    st.rerun()
-        
-        df_b = pd.DataFrame(list(st.session_state.bordas.items()), columns=["Borda", "Preço"])
-        st.table(df_b)
+        gerenciar_categoria("Bordas", "bordas", "bordas.json", "Tipo de Borda")
 
-    # --- ABA BEBIDAS ---
     with tab_be:
-        with st.form("add_bebida", clear_on_submit=True):
-            col1, col2 = st.columns(2)
-            nova_be = col1.text_input("Nome da Bebida")
-            preco_be = col2.number_input("Preço Unidade (R$)", min_value=0.0)
-            if st.form_submit_button("➕ Adicionar Bebida"):
-                if nova_be:
-                    st.session_state.bebidas[nova_be] = preco_be
-                    salvar_dados('bebidas.json', st.session_state.bebidas)
-                    st.rerun()
-        
-        df_be = pd.DataFrame(list(st.session_state.bebidas.items()), columns=["Bebida", "Preço"])
-        st.dataframe(df_be, use_container_width=True)
+        gerenciar_categoria("Bebidas", "bebidas", "bebidas.json", "Bebida")
 
 # --- TELA: CLIENTES ---
 elif aba == "Clientes":
@@ -305,6 +295,7 @@ elif aba == "Promoções":
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.dataframe(pd.DataFrame(st.session_state.vendas))
+
 
 
 
