@@ -147,9 +147,9 @@ if aba == "PDV - Pedidos":
         )
         
         # 4. Botão para limpar e resetar a tela
-            if st.button("🔄 Iniciar Novo Pedido"):
-                st.session_state.carrinho = []
-                st.rerun() # O comando mágico que limpa tudo e recarrega
+                if st.button("🔄 Iniciar Novo Pedido"):
+                    st.session_state.carrinho = []
+                    st.rerun() # O comando mágico que limpa tudo e recarrega
             
 elif aba == "Cardápio":
     st.header("Gerenciar Cardápio")
@@ -211,6 +211,7 @@ elif aba == "Clientes":
 # --- TELA 5: RELATÓRIO ---
 elif aba == "Relatório":
     st.table(pd.DataFrame(st.session_state.vendas))
+
 
 
 
