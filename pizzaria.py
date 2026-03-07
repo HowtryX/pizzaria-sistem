@@ -15,7 +15,7 @@ def gerar_comanda_pdf(c_nome, lista_itens, bebs_dict, total, obs):
     pdf.set_margins(5, 5, 5) # Margens estreitas
     
     pdf.set_font("Arial", 'B', 12)
-    pdf.cell(62, 7, txt="👑Imperio Rita🍕", ln=True, align='C')
+    pdf.cell(62, 7, txt="Imperio Rita", ln=True, align='C')
     
     pdf.set_font("Arial", size=9)
     pdf.cell(62, 5, txt=f"Data: {datetime.now().strftime('%d/%m %H:%M')}", ln=True)
@@ -201,6 +201,7 @@ elif aba == "Clientes":
 # --- TELA 5: RELATÓRIO ---
 elif aba == "Relatório":
     st.table(pd.DataFrame(st.session_state.vendas))
+
 
 
 
