@@ -209,50 +209,56 @@ elif aba == "Cardápio":
         gerenciar_categoria("Bebidas", "bebidas", "bebidas.json", "Bebida")
 
 # --- TELA: CLIENTES ---
+# --- TELA: CLIENTES (EDIÇÃO E EXCLUSÃO) ---
 elif aba == "Clientes":
-    st.header("👥 Cadastro de Clientes")
+    st.header("👥 Gestão de Clientes")
     
-    # Formulário de Cadastro
-    with st.form("cad_cliente", clear_on_submit=True):
-        col1, col2 = st.columns(2)
-        n = col1.text_input("Nome Completo")
-        t = col2.text_input("Telefone / WhatsApp")
-        e = st.text_area("Endereço de Entrega")
-        
-        btn_cadastrar = st.form_submit_button("💾 Salvar Cliente")
-        
-        if btn_cadastrar:
-            if n and t: # Validação simples para não salvar vazio
-                novo_cliente = {"nome": n, "telefone": t, "endereco": e}
-                
-                # 1. Adiciona na memória (Session State)
-                st.session_state.clientes.append(novo_cliente)
-                
-                # 2. Grava no arquivo físico IMEDIATAMENTE
-                salvar_dados('clientes.json', st.session_state.clientes)
-                
-                st.success(f"✅ Cliente {n} cadastrado com sucesso!")
-                st.rerun()
-            else:
-                st.error("⚠️ Nome e Telefone são obrigatórios!")
+    # 1. Formulário para Novo Cadastro (Opcional, mas mantém a organização)
+    with st.expander("➕ Cadastrar Novo Cliente"):
+        with st.form("form_novo_cliente", clear_on_submit=True):
+            c1, c2 = st.columns(2)
+            n = c1.text_input("Nome")
+            t = c2.text_input("Telefone")
+            e = st.text_area("Endereço")
+            if st.form_submit_button("Salvar Novo Cliente"):
+                if n and t:
+                    st.session_state.clientes.append({"nome": n, "telefone": t, "endereco": e})
+                    salvar_dados('clientes.json', st.session_state.clientes)
+                    st.success(f"Cliente {n} cadastrado!")
+                    st.rerun()
+                else:
+                    st.error("Nome e Telefone são obrigatórios.")
 
-    # Exibição da Tabela de Clientes
     st.write("---")
-    st.subheader("Lista de Clientes Cadastrados")
-    
+    st.subheader("📋 Lista de Clientes")
+    st.info("💡 **Como editar/apagar:** Clique nas células para alterar dados. Selecione a linha e aperte 'Delete' no teclado para remover um cliente.")
+
+    # 2. Editor de Dados para Editar e Apagar
     if st.session_state.clientes:
+        # Criamos o DataFrame
         df_clientes = pd.DataFrame(st.session_state.clientes)
-        # Reordenando as colunas para ficar mais bonito
-        st.dataframe(df_clientes[["nome", "telefone", "endereco"]], use_container_width=True)
         
-        # Opção para limpar a lista (CUIDADO)
-        if st.button("🗑️ Apagar Todos os Clientes"):
-            st.session_state.clientes = []
-            salvar_dados('clientes.json', [])
+        # Editor interativo
+        df_editado = st.data_editor(
+            df_clientes,
+            num_rows="dynamic", # Permite deletar e adicionar linhas
+            use_container_width=True,
+            key="editor_clientes"
+        )
+        
+        # 3. Botão para Salvar Alterações Permanentemente
+        if st.button("💾 Salvar Alterações na Lista"):
+            # Converte o DataFrame editado de volta para lista de dicionários
+            nova_lista = df_editado.to_dict('records')
+            
+            # Remove entradas totalmente vazias (caso o usuário adicione linha e não preencha)
+            st.session_state.clientes = [c for c in nova_lista if c.get('nome')]
+            
+            salvar_dados('clientes.json', st.session_state.clientes)
+            st.success("✅ Lista de clientes atualizada com sucesso!")
             st.rerun()
     else:
-        st.info("Nenhum cliente cadastrado ainda.")
-
+        st.warning("Nenhum cliente cadastrado no sistema.")
 # --- TELA 3: PROMOÇÕES ---
 elif aba == "Promoções":
     st.header("🎁 Gestão de Promoções")
@@ -295,6 +301,7 @@ elif aba == "Promoções":
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.dataframe(pd.DataFrame(st.session_state.vendas))
+
 
 
 
