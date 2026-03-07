@@ -138,9 +138,10 @@ if aba == "PDV - Pedidos":
                 st.markdown(f'<a href="data:application/pdf;base64,{b64}" target="_blank">🖨️ IMPRIMIR COMANDA</a>', unsafe_allow_html=True)
                 
                 # 3. Limpeza automática do carrinho ao finalizar
+               # 3. Botão de Nova Venda (Limpa o carrinho e reinicia a tela)
                 if st.button("🔄 Iniciar Novo Pedido"):
-                    st.session_state.carrinho = []
-                    st.rerun()
+                    st.session_state.carrinho = [] # Limpa a lista na memória
+                    st.rerun() # FORÇA o Streamlit a recarregar a página do zero
                 # Opcional: Limpar carrinho após registrar
                 # st.session_state.carrinho = []
             
@@ -204,6 +205,7 @@ elif aba == "Clientes":
 # --- TELA 5: RELATÓRIO ---
 elif aba == "Relatório":
     st.table(pd.DataFrame(st.session_state.vendas))
+
 
 
 
