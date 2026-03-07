@@ -102,11 +102,16 @@ if st.button("✅ FINALIZAR E IMPRIMIR"):
     
     # Injeta o JavaScript para abrir a janela de impressão
     # Nota: Isso funciona melhor se você abrir o PDF em uma nova janela ou aba.
-    js = """
+    # Ajuste na injeção de JavaScript
+    js_code = """
     <script>
-        window.print();
+        // Aguarda 1 segundo (1000ms) para garantir que o PDF carregou
+        setTimeout(function() {
+            window.print();
+        }, 1000);
     </script>
     """
+    components.html(js_code, height=0)
     components.html(js, height=0)
     st.success("Pedido registrado! A janela de impressão deve aparecer agora.")
 # --- TELA 2: CARDÁPIO ---
@@ -170,6 +175,7 @@ elif aba == "Clientes":
 # --- TELA 5: RELATÓRIO ---
 elif aba == "Relatório":
     st.table(pd.DataFrame(st.session_state.vendas))
+
 
 
 
