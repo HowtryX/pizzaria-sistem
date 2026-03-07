@@ -99,7 +99,7 @@ elif aba == "Cardápio":
             n_p = st.text_input("Nome", key="np_n"); v_p = st.number_input("Preço", key="np_v")
             if st.button("Salvar Pizza"): st.session_state.pizzas[n_p] = v_p; salvar_dados('pizzas.json', st.session_state.pizzas); st.rerun()
                 
-    with c2:
+    with c2:
         st.subheader("Bebidas")
         df_b = pd.DataFrame(list(st.session_state.bebidas.items()), columns=["Bebida", "Preço"])
         edited_b = st.data_editor(df_b, use_container_width=True)
@@ -107,7 +107,7 @@ elif aba == "Cardápio":
             n_b = st.text_input("Nome", key="nb_n"); v_b = st.number_input("Preço", key="nb_v")
             if st.button("Salvar Bebida"): st.session_state.bebidas[n_b] = v_b; salvar_dados('bebidas.json', st.session_state.bebidas); st.rerun()
                 
-    with c3:
+    with c3:
         st.subheader("Bordas")
         df_bor = pd.DataFrame(list(st.session_state.bordas.items()), columns=["Borda", "Preço"])
         edited_bor = st.data_editor(df_bor, use_container_width=True)
@@ -123,21 +123,21 @@ elif aba == "Cardápio":
             
 # --- TELA 3: PROMOÇÕES ---
 elif aba == "Promoções":
-    st.header("🎁 Promoções Ativas")
-    with st.expander("➕ Nova Promoção"):
-        todos = {**st.session_state.pizzas, **st.session_state.bebidas}
-        prod = st.selectbox("Produto:", list(todos.keys()), key="p_prod")
-        val = st.number_input("Desconto (R$):", min_value=0.0, key="p_val")
-        if st.button("Adicionar"): st.session_state.promocoes.append({"produto": prod, "desconto": val}); salvar_dados('promocoes.json', st.session_state.promocoes); st.rerun()
-    for i, p in enumerate(st.session_state.promocoes):
-        c1, c2, c3 = st.columns([3, 1, 1])
-        c1.warning(f"**{p['produto']}** - Desconto: R$ {p['desconto']:.2f}")
-        if c2.button("✏️", key=f"e_{i}"): st.session_state[f"ed_{i}"] = True
-        if c3.button("🗑️", key=f"d_{i}"): st.session_state.promocoes.pop(i); salvar_dados('promocoes.json', st.session_state.promocoes); st.rerun()
-        if st.session_state.get(f"ed_{i}"):
-            nv = st.number_input("Novo valor:", value=p['desconto'], key=f"n_{i}")
-            if st.button("Confirmar", key=f"c_{i}"): st.session_state.promocoes[i]['desconto'] = nv; salvar_dados('promocoes.json', st.session_state.promocoes); st.session_state[f"ed_{i}"] = False; st.rerun()
-
+    st.header("🎁 Promoções Ativas")
+    with st.expander("➕ Nova Promoção"):
+        todos = {**st.session_state.pizzas, **st.session_state.bebidas}
+        prod = st.selectbox("Produto:", list(todos.keys()), key="p_prod")
+        val = st.number_input("Desconto (R$):", min_value=0.0, key="p_val")
+        if st.button("Adicionar"): st.session_state.promocoes.append({"produto": prod, "desconto": val}); salvar_dados('promocoes.json', st.session_state.promocoes); st.rerun()
+            for i, p in enumerate(st.session_state.promocoes):
+                c1, c2, c3 = st.columns([3, 1, 1])
+                c1.warning(f"**{p['produto']}** - Desconto: R$ {p['desconto']:.2f}")
+                if c2.button("✏️", key=f"e_{i}"): st.session_state[f"ed_{i}"] = True
+                    if c3.button("🗑️", key=f"d_{i}"): st.session_state.promocoes.pop(i); salvar_dados('promocoes.json', st.session_state.promocoes); st.rerun()
+                        if st.session_state.get(f"ed_{i}"):
+                            nv = st.number_input("Novo valor:", value=p['desconto'], key=f"n_{i}")
+                            if st.button("Confirmar", key=f"c_{i}"): st.session_state.promocoes[i]['desconto'] = nv; salvar_dados('promocoes.json', st.session_state.promocoes); st.session_state[f"ed_{i}"] = False; st.rerun()
+                                
 # --- TELA 4: CLIENTES ---
 elif aba == "Clientes":
     with st.form("cad"):
@@ -148,6 +148,7 @@ elif aba == "Clientes":
 # --- TELA 5: RELATÓRIO ---
 elif aba == "Relatório":
 st.table(pd.DataFrame(st.session_state.vendas))
+
 
 
 
