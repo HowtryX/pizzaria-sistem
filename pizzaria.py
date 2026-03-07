@@ -85,7 +85,7 @@ if aba == "PDV - Pedidos":
         # 2. Abas de Seleção
         tab_promo, tab_manual = st.tabs(["🎁 Combos", "🍕 Seleção Manual"])
         
-            with tab_promo:
+           with tab_promo:
                if st.session_state.promocoes:
                 p_sel = st.selectbox("Escolha o combo:", st.session_state.promocoes, format_func=lambda x: x.get('nome', 'Sem Nome'))
                 if st.button("Aplicar Promoção"):
@@ -235,6 +235,7 @@ elif aba == "Promoções":
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.dataframe(pd.DataFrame(st.session_state.vendas))
+
 
 
 
