@@ -81,7 +81,7 @@ if aba == "PDV - Pedidos":
     resultados = [c for c in st.session_state.clientes if nome_busca.lower() in c.get('nome', '').lower()]
     c_sel = st.selectbox("Selecione o cliente:", resultados, format_func=lambda x: x['nome']) if resultados else None
     
-            if c_sel:
+if c_sel:
         # 2. Abas de Seleção
             tab_promo, tab_manual = st.tabs(["🎁 Combos", "🍕 Seleção Manual"])
         
@@ -235,6 +235,7 @@ elif aba == "Promoções":
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.dataframe(pd.DataFrame(st.session_state.vendas))
+
 
 
 
