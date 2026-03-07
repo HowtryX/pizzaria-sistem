@@ -91,7 +91,7 @@ if aba == "PDV - Pedidos":
 elif aba == "Cardápio":
     st.header("Gerenciar Cardápio")
     c1, c2, c3 = st.columns(3)
-     with c1:
+    with c1:
         st.subheader("Pizzas")
         df_p = pd.DataFrame(list(st.session_state.pizzas.items()), columns=["Sabor", "Preço"])
         edited_p = st.data_editor(df_p, use_container_width=True)
@@ -149,6 +149,7 @@ elif aba == "Clientes":
 elif aba == "Relatório":
     st.table(pd.DataFrame(st.session_state.vendas))
  implementa nesse codigo
+
 
 
 
