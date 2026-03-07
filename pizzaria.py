@@ -113,38 +113,38 @@ if c_sel:
             st.write("### 🛒 Carrinho")
         
         # Exibição do carrinho com Botão de Remover
-        for i, item in enumerate(st.session_state.carrinho):
-            col_nome, col_preco, col_btn = st.columns([3, 1, 1])
-            col_nome.write(f"{item.get('s1')} + {item.get('s2')} | {item.get('borda')}")
-            col_preco.write(f"R$ {item.get('preco', 0):.2f}")
-            if col_btn.button("🗑️", key=f"del_c_{i}"):
-                st.session_state.carrinho.pop(i)
-                st.rerun()
+            for i, item in enumerate(st.session_state.carrinho):
+                col_nome, col_preco, col_btn = st.columns([3, 1, 1])
+                col_nome.write(f"{item.get('s1')} + {item.get('s2')} | {item.get('borda')}")
+                col_preco.write(f"R$ {item.get('preco', 0):.2f}")
+                if col_btn.button("🗑️", key=f"del_c_{i}"):
+                    st.session_state.carrinho.pop(i)
+                    st.rerun()
 
         # 4. Total e Finalização
-        if st.session_state.carrinho:
-            total_pizzas = sum(item.get('preco', 0) for item in st.session_state.carrinho)
-            taxa = st.number_input("Taxa de Entrega (R$):", value=8.0)
-            total_geral = total_pizzas + taxa
-            st.subheader(f"💰 Total: R$ {total_geral:.2f}")
+            if st.session_state.carrinho:
+                total_pizzas = sum(item.get('preco', 0) for item in st.session_state.carrinho)
+                taxa = st.number_input("Taxa de Entrega (R$):", value=8.0)
+                total_geral = total_pizzas + taxa
+                st.subheader(f"💰 Total: R$ {total_geral:.2f}")
 
             # Botões de Ação
-            col_f, col_n = st.columns(2)
-            if col_f.button("✅ FINALIZAR E IMPRIMIR"):
-                st.session_state.ultimo_pdf = gerar_comanda_pdf(c_sel['nome'], st.session_state.carrinho, [], total_geral, "")
-                st.session_state.vendas.append({"Cliente": c_sel['nome'], "Itens": st.session_state.carrinho, "Total": total_geral})
-                salvar_dados('vendas.json', st.session_state.vendas)
-                st.rerun()
-                
-            if 'ultimo_pdf' in st.session_state:
-                with open(st.session_state.ultimo_pdf, "rb") as f:
-                    b64 = base64.b64encode(f.read()).decode()
-                st.markdown(f'<a href="data:application/pdf;base64,{b64}" target="_blank">🖨️ IMPRIMIR COMANDA</a>', unsafe_allow_html=True)
-                
-                if col_n.button("🔄 INICIAR NOVO PEDIDO"):
-                    st.session_state.carrinho = []
-                    if 'ultimo_pdf' in st.session_state: del st.session_state.ultimo_pdf
+                col_f, col_n = st.columns(2)
+                if col_f.button("✅ FINALIZAR E IMPRIMIR"):
+                    st.session_state.ultimo_pdf = gerar_comanda_pdf(c_sel['nome'], st.session_state.carrinho, [], total_geral, "")
+                    st.session_state.vendas.append({"Cliente": c_sel['nome'], "Itens": st.session_state.carrinho, "Total": total_geral})
+                    salvar_dados('vendas.json', st.session_state.vendas)
                     st.rerun()
+                
+                if 'ultimo_pdf' in st.session_state:
+                    with open(st.session_state.ultimo_pdf, "rb") as f:
+                        b64 = base64.b64encode(f.read()).decode()
+                    st.markdown(f'<a href="data:application/pdf;base64,{b64}" target="_blank">🖨️ IMPRIMIR COMANDA</a>', unsafe_allow_html=True)
+                
+                    if col_n.button("🔄 INICIAR NOVO PEDIDO"):
+                        st.session_state.carrinho = []
+                        if 'ultimo_pdf' in st.session_state: del st.session_state.ultimo_pdf
+                        st.rerun()
 
 # --- TELA: CARDÁPIO ---
 # --- TELA: CARDÁPIO (GESTÃO COMPLETA) ---
@@ -235,6 +235,7 @@ elif aba == "Promoções":
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.dataframe(pd.DataFrame(st.session_state.vendas))
+
 
 
 
