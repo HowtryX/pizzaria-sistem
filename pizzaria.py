@@ -91,7 +91,7 @@ if aba == "PDV - Pedidos":
             salvar_dados('vendas.json', st.session_state.vendas)
             
                 # 2. Gerar o PDF
-                caminho_pdf = gerar_comanda_pdf(c_sel['nome'], s1, s2, borda_sel, bebs, total, obs)
+            caminho_pdf = gerar_comanda_pdf(c_sel['nome'], s1, s2, borda_sel, bebs, total, obs)
             
                 # 3. Exibir o PDF para o usuário e oferecer a impressão
                 import base64
@@ -167,6 +167,7 @@ elif aba == "Clientes":
 # --- TELA 5: RELATÓRIO ---
 elif aba == "Relatório":
     st.table(pd.DataFrame(st.session_state.vendas))
+
 
 
 
