@@ -9,30 +9,35 @@ import base64
 
 # --- FUNÇÃO PARA GERAR COMANDA ---
 def gerar_comanda_pdf(c_nome, lista_itens, bebs_dict, total, obs):
-    pdf = FPDF()
+    # Formato personalizado: largura 72mm, altura variável (começamos com 150mm)
+    pdf = FPDF(unit='mm', format=(72, 200)) 
     pdf.add_page()
-    pdf.set_font("Arial", 'B', 16)
-    pdf.cell(200, 10, txt="COMANDA DE PEDIDO", ln=True, align='C')
-    pdf.set_font("Arial", size=12)
-    pdf.ln(5)
-    pdf.cell(200, 10, txt=f"Cliente: {c_nome}", ln=True)
-    pdf.ln(5)
+    pdf.set_margins(5, 5, 5) # Margens estreitas
     
-    # Loop para percorrer todas as pizzas do carrinho
+    pdf.set_font("Arial", 'B', 12)
+    pdf.cell(62, 7, txt="PIZZARIA PRO", ln=True, align='C')
+    
+    pdf.set_font("Arial", size=9)
+    pdf.cell(62, 5, txt=f"Data: {datetime.now().strftime('%d/%m %H:%M')}", ln=True)
+    pdf.cell(62, 5, txt=f"Cliente: {c_nome}", ln=True)
+    pdf.ln(2)
+    
+    # Lista de Pizzas
     for i, item in enumerate(lista_itens):
-        s1 = item['s1']
-        s2 = item['s2']
-        borda = item['borda']
-        pdf.cell(200, 10, txt=f"Pizza {i+1}: {s1} + {s2} | Borda: {borda}", ln=True)
-        
-    pdf.ln(5)
-    pdf.cell(200, 10, txt=f"Bebidas: {', '.join(bebs_dict)}", ln=True)
-    pdf.ln(5)
-    pdf.cell(200, 10, txt=f"Obs: {obs}", ln=True)
-    pdf.set_font("Arial", 'B', 14)
-    pdf.cell(200, 10, txt=f"TOTAL: R$ {total:.2f}", ln=True)
+        pdf.set_font("Arial", 'B', 9)
+        pdf.cell(62, 5, txt=f"{i+1}. {item['s1']} + {item['s2']}", ln=True)
+        pdf.set_font("Arial", size=9)
+        pdf.cell(62, 5, txt=f"Borda: {item['borda']} | R$ {item['preco']:.2f}", ln=True)
     
-    caminho = "comanda.pdf"
+    pdf.ln(2)
+    if bebs_dict:
+        pdf.cell(62, 5, txt=f"Bebidas: {', '.join(bebs_dict)}", ln=True)
+    
+    pdf.cell(62, 5, txt=f"Obs: {obs}", ln=True)
+    pdf.set_font("Arial", 'B', 11)
+    pdf.cell(62, 8, txt=f"TOTAL: R$ {total:.2f}", ln=True, align='R')
+    
+    caminho = "comanda_termica.pdf"
     pdf.output(caminho)
     return caminho
 
@@ -196,6 +201,7 @@ elif aba == "Clientes":
 # --- TELA 5: RELATÓRIO ---
 elif aba == "Relatório":
     st.table(pd.DataFrame(st.session_state.vendas))
+
 
 
 
