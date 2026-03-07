@@ -79,42 +79,46 @@ if aba == "PDV - Pedidos":
     # 1. Busca de Cliente
     nome_busca = st.text_input("🔍 Buscar cliente:")
     resultados = [c for c in st.session_state.clientes if nome_busca.lower() in c.get('nome', '').lower()]
-    c_sel = st.selectbox("Selecione o cliente:", resultados, format_func=lambda x: x['nome']) if resultados else None
+    
+    # Selectbox de cliente
+    c_sel = st.selectbox("Selecione o cliente:", resultados, format_func=lambda x: x.get('nome', 'Sem Nome')) if resultados else None
+    
+    if not resultados and nome_busca:
+        st.warning("⚠️ Cliente não encontrado. Cadastre-o na aba Clientes.")
     
     if c_sel:
-        # 2. Abas de Seleção
-            # 2. SELEÇÃO DE ITENS
+        st.info(f"👤 Cliente: {c_sel.get('nome')} | 📍 {c_sel.get('endereco', 'Endereço não cadastrado')}")
+        
+        # 2. SELEÇÃO DE ITENS
         st.subheader("➕ Adicionar ao Pedido")
         tab_promo, tab_manual = st.tabs(["🎁 Combos/Promoções", "🍕 Seleção Manual"])
         
         with tab_promo:
             if st.session_state.promocoes:
-                # Criamos uma chave única para o selectbox de promoção
                 p_sel = st.selectbox(
                     "Escolha o combo desejado:", 
                     st.session_state.promocoes, 
-                    format_func=lambda x: f"{x.get('nome')} - R$ {x.get('preco_promocional'):.2f}",
+                    format_func=lambda x: f"{x.get('nome')} - R$ {x.get('preco_promocional', 0):.2f}",
                     key="sb_promo_pdv"
                 )
                 
                 if st.button("🚀 Aplicar Este Combo", key="btn_aplicar_promo"):
-                    # Pegamos os dados EXATOS da promoção selecionada no selectbox acima
                     qtd = p_sel.get('qtd_pizzas', 1)
                     preco_unitario = p_sel.get('preco_promocional', 0.0) / qtd
                     
                     for _ in range(qtd):
                         st.session_state.carrinho.append({
-                            "s1": p_sel['itens'].get('s1', 'Mussarela'), 
-                            "s2": p_sel['itens'].get('s2', 'Nenhum'), 
-                            "borda": p_sel['itens'].get('borda', 'Sem Borda'), 
+                            "s1": p_sel.get('itens', {}).get('s1', 'Mussarela'), 
+                            "s2": p_sel.get('itens', {}).get('s2', 'Nenhum'), 
+                            "borda": p_sel.get('itens', {}).get('borda', 'Sem Borda'), 
                             "preco": preco_unitario,
                             "entrega_gratis": p_sel.get('entrega_inclusa', False),
-                            "tipo": "Promoção" # Identificador para não confundir
+                            "tipo": "Promoção"
                         })
-                    st.success(f"Combo '{p_sel.get('nome')}' adicionado!")
+                    st.success(f"✅ Combo '{p_sel.get('nome')}' adicionado!")
                     st.rerun()
             else:
-                st.info("Nenhuma promoção cadastrada no sistema.")
+                st.info("Nenhuma promoção cadastrada.")
 
         with tab_manual:
             c1, c2 = st.columns(2)
@@ -134,52 +138,71 @@ if aba == "PDV - Pedidos":
             
             if st.button("🍕 Adicionar Pizza Manual", key="btn_add_manual"):
                 st.session_state.carrinho.append({
-                    "s1": s1_m, 
-                    "s2": s2_m, 
-                    "borda": borda_m, 
-                    "bebidas": bebs_m,
-                    "preco": total_m,
-                    "tipo": "Manual"
+                    "s1": s1_m, "s2": s2_m, "borda": borda_m, 
+                    "bebidas": bebs_m, "preco": total_m, "tipo": "Manual",
+                    "entrega_gratis": False
                 })
-                st.success("Pizza manual adicionada!")
+                st.success("✅ Item adicionado ao carrinho!")
                 st.rerun()
-        # 3. CARRINHO (Aparece sempre que houver cliente selecionado)
-            st.write("---")
-            st.write("### 🛒 Carrinho")
+
+        # 3. CARRINHO
+        st.write("---")
+        st.write("### 🛒 Carrinho")
         
-        # Exibição do carrinho com Botão de Remover
+        if not st.session_state.carrinho:
+            st.write("O carrinho está vazio.")
+        else:
             for i, item in enumerate(st.session_state.carrinho):
                 col_nome, col_preco, col_btn = st.columns([3, 1, 1])
-                col_nome.write(f"{item.get('s1')} + {item.get('s2')} | {item.get('borda')}")
+                info_item = f"**{item.get('s1')}**"
+                if item.get('s2') != "Nenhum": info_item += f" / {item.get('s2')}"
+                info_item += f" ({item.get('borda')})"
+                
+                col_nome.write(info_item)
                 col_preco.write(f"R$ {item.get('preco', 0):.2f}")
                 if col_btn.button("🗑️", key=f"del_c_{i}"):
                     st.session_state.carrinho.pop(i)
                     st.rerun()
 
-        # 4. Total e Finalização
-            if st.session_state.carrinho:
-                total_pizzas = sum(item.get('preco', 0) for item in st.session_state.carrinho)
-                taxa = st.number_input("Taxa de Entrega (R$):", value=8.0)
-                total_geral = total_pizzas + taxa
-                st.subheader(f"💰 Total: R$ {total_geral:.2f}")
+            # 4. Total e Finalização
+            st.write("---")
+            total_pizzas = sum(item.get('preco', 0) for item in st.session_state.carrinho)
+            
+            # Lógica de Entrega Grátis: se houver QUALQUER item de promoção com entrega grátis, o valor padrão é 0
+            tem_entrega_gratis = any(item.get('entrega_gratis', False) for item in st.session_state.carrinho)
+            taxa_padrao = 0.0 if tem_entrega_gratis else 8.0
+            
+            taxa = st.number_input("Taxa de Entrega (R$):", value=taxa_padrao)
+            total_geral = total_pizzas + taxa
+            st.subheader(f"💰 Total Geral: R$ {total_geral:.2f}")
 
-            # Botões de Ação
-                col_f, col_n = st.columns(2)
-                if col_f.button("✅ FINALIZAR E IMPRIMIR"):
-                    st.session_state.ultimo_pdf = gerar_comanda_pdf(c_sel['nome'], st.session_state.carrinho, [], total_geral, "")
-                    st.session_state.vendas.append({"Cliente": c_sel['nome'], "Itens": st.session_state.carrinho, "Total": total_geral})
-                    salvar_dados('vendas.json', st.session_state.vendas)
+            col_f, col_n = st.columns(2)
+            
+            if col_f.button("✅ FINALIZAR E IMPRIMIR", use_container_width=True):
+                # Gerar venda para o relatório
+                venda_final = {
+                    "data": datetime.now().strftime("%d/%m/%Y %H:%M"),
+                    "cliente": c_sel.get('nome'),
+                    "total": total_geral,
+                    "itens": st.session_state.carrinho.copy()
+                }
+                st.session_state.vendas.append(venda_final)
+                salvar_dados('vendas.json', st.session_state.vendas)
+                
+                # Gerar PDF
+                st.session_state.ultimo_pdf = gerar_comanda_pdf(c_sel['nome'], st.session_state.carrinho, [], total_geral, "")
+                st.success("Venda realizada com sucesso!")
+                st.rerun()
+
+            if 'ultimo_pdf' in st.session_state:
+                with open(st.session_state.ultimo_pdf, "rb") as f:
+                    b64 = base64.b64encode(f.read()).decode()
+                st.markdown(f'<a href="data:application/pdf;base64,{b64}" target="_blank" style="text-decoration:none;"><button style="width:100%; cursor:pointer; background-color:#28a745; color:white; border:none; padding:10px; border-radius:5px;">🖨️ BAIXAR/IMPRIMIR COMANDA</button></a>', unsafe_allow_html=True)
+                
+                if col_n.button("🔄 NOVO PEDIDO", use_container_width=True):
+                    st.session_state.carrinho = []
+                    if 'ultimo_pdf' in st.session_state: del st.session_state.ultimo_pdf
                     st.rerun()
-                
-                if 'ultimo_pdf' in st.session_state:
-                    with open(st.session_state.ultimo_pdf, "rb") as f:
-                        b64 = base64.b64encode(f.read()).decode()
-                    st.markdown(f'<a href="data:application/pdf;base64,{b64}" target="_blank">🖨️ IMPRIMIR COMANDA</a>', unsafe_allow_html=True)
-                
-                    if col_n.button("🔄 INICIAR NOVO PEDIDO"):
-                        st.session_state.carrinho = []
-                        if 'ultimo_pdf' in st.session_state: del st.session_state.ultimo_pdf
-                        st.rerun()
 
 # --- TELA: CARDÁPIO ---
 # --- TELA: CARDÁPIO (GESTÃO COMPLETA) ---
@@ -354,6 +377,7 @@ elif aba == "Promoções":
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.dataframe(pd.DataFrame(st.session_state.vendas))
+
 
 
 
