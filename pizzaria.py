@@ -41,8 +41,8 @@ def gerar_comanda_pdf(c_nome, lista_itens, bebs_dict, total, obs):
         pdf.set_font("Arial", size=9)
         pdf.cell(62, 5, txt=f"Borda: {item['borda']} | R$ {item['preco']:.2f}", ln=True)
         if item.get('bebidas'):
-        pdf.set_font("Arial", size=9)
-        pdf.cell(62, 5, txt=f"Bebidas: {', '.join(item['bebidas'])}", ln=True)
+            pdf.set_font("Arial", size=9)
+            pdf.cell(62, 5, txt=f"Bebidas: {', '.join(item['bebidas'])}", ln=True)
     
     pdf.ln(2)
     if bebs_dict:
@@ -252,6 +252,7 @@ elif aba == "Promoções":
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.dataframe(pd.DataFrame(st.session_state.vendas))
+
 
 
 
