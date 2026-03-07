@@ -71,7 +71,7 @@ if aba == "PDV - Pedidos":
             s1 = st.selectbox("Sabor 1", list(st.session_state.pizzas.keys()))
             s2 = st.selectbox("Sabor 2", ["Nenhum"] + list(st.session_state.pizzas.keys()))
             borda_sel = st.selectbox("Escolha a Borda:", list(st.session_state.bordas.keys()))
-            taxa_entrega = st.number_input("Taxa de Entrega (R$):", value=5.0)
+            taxa_entrega = st.number_input("Taxa de Entrega (R$):", value=8.0)
         with col2:
             bebs = st.multiselect("Bebidas:", list(st.session_state.bebidas.keys()))
             qtde_bebs = {b: st.number_input(f"Qtd {b}", min_value=1, value=1, key=f"k_{b}") for b in bebs}
@@ -170,6 +170,7 @@ elif aba == "Clientes":
 # --- TELA 5: RELATÓRIO ---
 elif aba == "Relatório":
     st.table(pd.DataFrame(st.session_state.vendas))
+
 
 
 
