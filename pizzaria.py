@@ -144,10 +144,8 @@ elif aba == "Clientes":
 elif aba == "Promoções":
     st.header("🎁 Criar Promoção Personalizada")
     
-    # 1. Painel de criação
     with st.expander("➕ Nova Promoção de Combo/Pizza"):
         nome_promo = st.text_input("Nome da Promoção (ex: Combo Casal)")
-        # Seleção de itens como no PDV
         s1 = st.selectbox("Sabor 1", list(st.session_state.pizzas.keys()), key="promo_s1")
         s2 = st.selectbox("Sabor 2", ["Nenhum"] + list(st.session_state.pizzas.keys()), key="promo_s2")
         borda = st.selectbox("Borda:", list(st.session_state.bordas.keys()), key="promo_borda")
@@ -156,26 +154,36 @@ elif aba == "Promoções":
         
         if st.button("Salvar Promoção"):
             nova_promo = {
-                "nome": nome_promo,
+                "nome": nome_promo if nome_promo else "Promoção Sem Nome",
                 "itens": {"s1": s1, "s2": s2, "borda": borda, "bebidas": bebs},
                 "preco_promocional": preco_final
             }
             st.session_state.promocoes.append(nova_promo)
             salvar_dados('promocoes.json', st.session_state.promocoes)
-            st.success("Promoção criada com sucesso!")
+            st.success("Promoção criada!")
             st.rerun()
 
-    # 2. Exibição das promoções existentes
     st.subheader("Promoções Ativas")
+    # Tratamento: se o arquivo estiver vazio ou corrompido, reseta
+    if not isinstance(st.session_state.promocoes, list):
+        st.session_state.promocoes = []
+
     for i, p in enumerate(st.session_state.promocoes):
+        # Proteção contra KeyError: usa .get() para pegar o valor ou um padrão
+        nome = p.get('nome', 'Promoção Antiga')
+        itens = p.get('itens', {})
+        preco = p.get('preco_promocional', 0.0)
+        
         with st.container(border=True):
-            col_info, col_del = st.columns([5, 1])
-            col_info.markdown(f"### {p['nome']}")
-            col_info.write(f"🍕 {p['itens']['s1']} + {p['itens']['s2']} | Borda: {p['itens']['borda']}")
-            col_info.write(f"🥤 Bebidas: {', '.join(p['itens']['bebidas']) if p['itens']['bebidas'] else 'Nenhuma'}")
-            col_info.subheader(f"💰 Preço: R$ {p['preco_promocional']:.2f}")
+            c1, c2 = st.columns([5, 1])
+            c1.markdown(f"### {nome}")
+            # Verifica se a estrutura de 'itens' existe antes de acessar
+            if itens:
+                c1.write(f"🍕 {itens.get('s1')} + {itens.get('s2')} | Borda: {itens.get('borda')}")
+                c1.write(f"🥤 Bebidas: {', '.join(itens.get('bebidas', [])) if itens.get('bebidas') else 'Nenhuma'}")
+            c1.subheader(f"💰 Preço: R$ {preco:.2f}")
             
-            if col_del.button("🗑️", key=f"del_p_{i}"):
+            if c2.button("🗑️", key=f"del_p_{i}"):
                 st.session_state.promocoes.pop(i)
                 salvar_dados('promocoes.json', st.session_state.promocoes)
                 st.rerun()
@@ -184,4 +192,5 @@ elif aba == "Promoções":
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.table(pd.DataFrame(st.session_state.vendas))
+
 
