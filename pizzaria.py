@@ -147,7 +147,8 @@ elif aba == "Clientes":
 
 # --- TELA 5: RELATÓRIO ---
 elif aba == "Relatório":
-st.table(pd.DataFrame(st.session_state.vendas))
+    st.table(pd.DataFrame(st.session_state.vendas))
+
 
 
 
