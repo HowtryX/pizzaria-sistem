@@ -101,12 +101,11 @@ if aba == "PDV - Pedidos":
                 b64 = base64.b64encode(bytes_data).decode('utf-8')
         
             st.success("Pedido registrado!")
-        
-        # O markdown agora está no mesmo nível que o 'with open', portanto 'b64' existe aqui dentro
-        st.markdown(
-            f'<a href="data:application/pdf;base64,{b64}" target="_blank" style="padding: 10px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">🖨️ CLIQUE PARA ABRIR E IMPRIMIR A COMANDA</a>', 
-            unsafe_allow_html=True
+            st.markdown(
+                f'<a href="data:application/pdf;base64,{b64}" target="_blank" style="padding: 10px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">🖨️ CLIQUE PARA ABRIR E IMPRIMIR A COMANDA</a>', 
+                unsafe_allow_html=True
         )
+            
 elif aba == "Cardápio":
     st.header("Gerenciar Cardápio")
     c1, c2, c3 = st.columns(3)
@@ -167,6 +166,7 @@ elif aba == "Clientes":
 # --- TELA 5: RELATÓRIO ---
 elif aba == "Relatório":
     st.table(pd.DataFrame(st.session_state.vendas))
+
 
 
 
