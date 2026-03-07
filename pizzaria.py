@@ -87,9 +87,9 @@ if aba == "PDV - Pedidos":
         st.subheader(f"💰 Total: R$ {total:.2f}")
         if st.button("✅ FINALIZAR E IMPRIMIR"):
         # 1. Salvar dados
-            nova_venda = {"Data": datetime.now().strftime("%d/%m %H:%M"), "Cliente": c_sel['nome'], "Total": total, "Obs": obs}
-            st.session_state.vendas.append(nova_venda)
-            salvar_dados('vendas.json', st.session_state.vendas)
+        nova_venda = {"Data": datetime.now().strftime("%d/%m %H:%M"), "Cliente": c_sel['nome'], "Total": total, "Obs": obs}
+        st.session_state.vendas.append(nova_venda)
+        salvar_dados('vendas.json', st.session_state.vendas)
         
         # 2. Gerar o PDF
         caminho_pdf = gerar_comanda_pdf(c_sel['nome'], s1, s2, borda_sel, bebs, total, obs)
@@ -167,6 +167,7 @@ elif aba == "Clientes":
 # --- TELA 5: RELATÓRIO ---
 elif aba == "Relatório":
     st.table(pd.DataFrame(st.session_state.vendas))
+
 
 
 
