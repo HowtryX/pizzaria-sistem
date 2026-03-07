@@ -92,13 +92,13 @@ elif aba == "Cardápio":
     st.header("Gerenciar Cardápio")
     c1, c2, c3 = st.columns(3)
     with c1:
-        st.subheader("Pizzas")
-        df_p = pd.DataFrame(list(st.session_state.pizzas.items()), columns=["Sabor", "Preço"])
-        edited_p = st.data_editor(df_p, use_container_width=True)
+        st.subheader("Pizzas")
+        df_p = pd.DataFrame(list(st.session_state.pizzas.items()), columns=["Sabor", "Preço"])
+        edited_p = st.data_editor(df_p, use_container_width=True)
         with st.expander("➕ Adicionar Pizza"):
-            n_p = st.text_input("Nome", key="np_n"); v_p = st.number_input("Preço", key="np_v")
-            if st.button("Salvar Pizza"): st.session_state.pizzas[n_p] = v_p; salvar_dados('pizzas.json', st.session_state.pizzas); st.rerun()
-
+            n_p = st.text_input("Nome", key="np_n"); v_p = st.number_input("Preço", key="np_v")
+            if st.button("Salvar Pizza"): st.session_state.pizzas[n_p] = v_p; salvar_dados('pizzas.json', st.session_state.pizzas); st.rerun()
+                
     with c2:
         st.subheader("Bebidas")
         df_b = pd.DataFrame(list(st.session_state.bebidas.items()), columns=["Bebida", "Preço"])
@@ -149,6 +149,7 @@ elif aba == "Clientes":
 elif aba == "Relatório":
     st.table(pd.DataFrame(st.session_state.vendas))
  implementa nesse codigo
+
 
 
 
