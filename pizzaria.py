@@ -95,6 +95,7 @@ if aba == "PDV - Pedidos":
             caminho_pdf = gerar_comanda_pdf(c_sel['nome'], s1, s2, borda_sel, bebs, total, obs)
         
         # 3. Processar e exibir DENTRO do mesmo bloco identado
+            import base64
             with open(caminho_pdf, "rb") as f:
                 bytes_data = f.read()
                 b64 = base64.b64encode(bytes_data).decode('utf-8')
@@ -166,6 +167,7 @@ elif aba == "Clientes":
 # --- TELA 5: RELATÓRIO ---
 elif aba == "Relatório":
     st.table(pd.DataFrame(st.session_state.vendas))
+
 
 
 
