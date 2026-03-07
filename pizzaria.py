@@ -94,56 +94,53 @@ if aba == "PDV - Pedidos":
             st.success("Pizza adicionada!")
 
         # Exibir resumo do carrinho
+       # --- EXIBIÇÃO E AÇÕES NO CARRINHO ---
         if st.session_state.carrinho:
             st.write("---")
-            st.write("### Carrinho")
-            for i, item in enumerate(st.session_state.carrinho):
-                st.write(f"{i+1}. {item['s1']} + {item['s2']} ({item['borda']}) - R$ {item['preco']:.2f}")
+            st.write("### 🛒 Carrinho")
             
+            # Loop para exibir e permitir ações
+            for i, item in enumerate(st.session_state.carrinho):
+                col_c, col_e, col_r = st.columns([4, 1, 1])
+                col_c.write(f"{i+1}. {item['s1']} + {item['s2']} ({item['borda']}) - R$ {item['preco']:.2f}")
+                
+                if col_r.button("🗑️", key=f"rem_{i}"):
+                    st.session_state.carrinho.pop(i)
+                    st.rerun() # Limpa e atualiza imediatamente
+
+            # Cálculo de Total
             total_pizzas = sum(item['preco'] for item in st.session_state.carrinho)
             taxa_entrega = st.number_input("Taxa de Entrega (R$):", value=8.0)
             total = total_pizzas + taxa_entrega
             st.subheader(f"💰 Total do Pedido: R$ {total:.2f}")
 
-            # --- BLOCO CORRETO DE FINALIZAÇÃO ---
-        # --- BLOCO DO BOTÃO FINALIZAR (DENTRO DA ABA PDV) ---
-       # ... (seu código anterior de resumo do carrinho e cálculo de total) ...
-            
-            # --- BLOCO CORRETO DE FINALIZAÇÃO ---
+            # --- BLOCO DE FINALIZAÇÃO ---
             if st.button("✅ FINALIZAR E IMPRIMIR"):
-                if not st.session_state.carrinho:
-                    st.error("O carrinho está vazio! Adicione pelo menos uma pizza.")
-                else:
-                    # 1. Salvar dados do pedido
-                    nova_venda = {
-                        "Data": datetime.now().strftime("%d/%m %H:%M"), 
-                        "Cliente": c_sel['nome'], 
-                        "Itens": st.session_state.carrinho, 
-                        "Total": total, 
-                        "Obs": obs
-                    }
-                    st.session_state.vendas.append(nova_venda)
-                    salvar_dados('vendas.json', st.session_state.vendas)
-                    
-                    # 2. Gerar o PDF (Passando a lista completa)
-                    caminho_pdf = gerar_comanda_pdf(c_sel['nome'], st.session_state.carrinho, bebs, total, obs)
-                    
-                    # 3. Processar Base64 para exibição
-                    import base64
-                    with open(caminho_pdf, "rb") as f:
-                        b64 = base64.b64encode(f.read()).decode('utf-8')
-                    
-                    st.success("Pedido registrado com sucesso!")
-                    
-                    # 4. Botão de Impressão (Abre em nova aba)
-                    st.markdown(
-                        f'<a href="data:application/pdf;base64,{b64}" target="_blank" style="padding: 15px; background-color: #28a745; color: white; text-align: center; text-decoration: none; border-radius: 8px; display: block; font-weight: bold;">🖨️ ABRIR E IMPRIMIR COMANDA</a>', 
-                        unsafe_allow_html=True
-                    )
-                # --- BOTÃO PARA LIMPAR CARRINHO / NOVA VENDA ---
-                    if st.button("🔄 Nova Venda (Limpar Carrinho)"):
-                        st.session_state.carrinho = []
-                        st.rerun()
+                # 1. Salvar dados
+                nova_venda = {
+                    "Data": datetime.now().strftime("%d/%m %H:%M"), 
+                    "Cliente": c_sel['nome'], 
+                    "Itens": st.session_state.carrinho, 
+                    "Total": total, 
+                    "Obs": obs
+                }
+                st.session_state.vendas.append(nova_venda)
+                salvar_dados('vendas.json', st.session_state.vendas)
+                
+                # 2. Gerar PDF e mostrar link
+                caminho_pdf = gerar_comanda_pdf(c_sel['nome'], st.session_state.carrinho, bebs, total, obs)
+                
+                import base64
+                with open(caminho_pdf, "rb") as f:
+                    b64 = base64.b64encode(f.read()).decode('utf-8')
+                
+                st.success("Pedido registrado!")
+                st.markdown(f'<a href="data:application/pdf;base64,{b64}" target="_blank">🖨️ IMPRIMIR COMANDA</a>', unsafe_allow_html=True)
+                
+                # 3. Limpeza automática do carrinho ao finalizar
+                if st.button("🔄 Iniciar Novo Pedido"):
+                    st.session_state.carrinho = []
+                    st.rerun()
                 # Opcional: Limpar carrinho após registrar
                 # st.session_state.carrinho = []
             
@@ -207,6 +204,7 @@ elif aba == "Clientes":
 # --- TELA 5: RELATÓRIO ---
 elif aba == "Relatório":
     st.table(pd.DataFrame(st.session_state.vendas))
+
 
 
 
