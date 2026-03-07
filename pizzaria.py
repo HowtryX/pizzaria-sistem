@@ -95,18 +95,15 @@ if aba == "PDV - Pedidos":
             caminho_pdf = gerar_comanda_pdf(c_sel['nome'], s1, s2, borda_sel, bebs, total, obs)
             
                 # 3. Exibir o PDF para o usuário e oferecer a impressão
-            with open(caminho_pdf, "rb") as f:
-                    bytes_pdf = f.read()
-                    b64_pdf = base64.b64encode(bytes_pdf).decode('utf-8')
-            
+                   with open(caminho_pdf, "rb") as f:
+                        bytes_data = f.read()
+                        b64 = base64.b64encode(bytes_data).decode('utf-8')
             # Exibe o PDF diretamente na tela (iframe)
-                    st.markdown(f'<iframe src="data:application/pdf;base64,{b64_pdf}" width="100%" height="600px"></iframe>', unsafe_allow_html=True)
-            
-            # Botão de download como backup
-                    st.download_button("🖨️ CLIQUE AQUI PARA IMPRIMIR (PDF)", bytes_pdf, "comanda.pdf", "application/pdf")
-            
-                    st.success("Pedido registrado! O PDF foi carregado acima. Aperte Ctrl+P para imprimir.")
-# --- TELA 2: CARDÁPIO ---
+                    st.success("Pedido registrado!")
+    st.markdown(
+        f'<a href="data:application/pdf;base64,{b64}" target="_blank" style="padding: 10px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">🖨️ CLIQUE PARA ABRIR E IMPRIMIR A COMANDA</a>', 
+        unsafe_allow_html=True
+    )
 elif aba == "Cardápio":
     st.header("Gerenciar Cardápio")
     c1, c2, c3 = st.columns(3)
@@ -167,6 +164,7 @@ elif aba == "Clientes":
 # --- TELA 5: RELATÓRIO ---
 elif aba == "Relatório":
     st.table(pd.DataFrame(st.session_state.vendas))
+
 
 
 
