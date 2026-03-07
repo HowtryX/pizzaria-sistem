@@ -85,35 +85,28 @@ if aba == "PDV - Pedidos":
         total = (preco_base + v_borda + preco_bebs + taxa_entrega) - desc
         st.subheader(f"💰 Total: R$ {total:.2f}")
 
-# ... (seu código de salvamento de venda continua o mesmo)
-
 if st.button("✅ FINALIZAR E IMPRIMIR"):
-    # 1. Salvar no JSON
-    nova_venda = {"Data": datetime.now().strftime("%d/%m %H:%M"), "Cliente": c_sel['nome'], "Total": total, "Obs": obs}
-    st.session_state.vendas.append(nova_venda)
-    salvar_dados('vendas.json', st.session_state.vendas)
-    
-    # 2. Gerar o PDF
-    caminho_pdf = gerar_comanda_pdf(c_sel['nome'], s1, s2, borda_sel, bebs, total, obs)
-    
-    # 3. Exibir o PDF e injetar o comando de imprimir
-    with open(caminho_pdf, "rb") as f:
-        st.download_button("📥 Baixar se a impressão falhar", f, "comanda.pdf", "application/pdf")
-    
-    # Injeta o JavaScript para abrir a janela de impressão
-    # Nota: Isso funciona melhor se você abrir o PDF em uma nova janela ou aba.
-    # Ajuste na injeção de JavaScript
-    js_code = """
-    <script>
-        // Aguarda 1 segundo (1000ms) para garantir que o PDF carregou
-        setTimeout(function() {
-            window.print();
-        }, 1000);
-    </script>
-    """
-    components.html(js_code, height=0)
-    components.html(js, height=0)
-    st.success("Pedido registrado! A janela de impressão deve aparecer agora.")
+            # 1. Salvar dados
+            nova_venda = {"Data": datetime.now().strftime("%d/%m %H:%M"), "Cliente": c_sel['nome'], "Total": total, "Obs": obs}
+            st.session_state.vendas.append(nova_venda)
+            salvar_dados('vendas.json', st.session_state.vendas)
+            
+            # 2. Gerar o PDF
+            caminho_pdf = gerar_comanda_pdf(c_sel['nome'], s1, s2, borda_sel, bebs, total, obs)
+            
+            # 3. Exibir o PDF para o usuário e oferecer a impressão
+            import base64
+            with open(caminho_pdf, "rb") as f:
+                bytes_pdf = f.read()
+                b64_pdf = base64.b64encode(bytes_pdf).decode('utf-8')
+            
+            # Exibe o PDF diretamente na tela (iframe)
+            st.markdown(f'<iframe src="data:application/pdf;base64,{b64_pdf}" width="100%" height="600px"></iframe>', unsafe_allow_html=True)
+            
+            # Botão de download como backup
+            st.download_button("🖨️ CLIQUE AQUI PARA IMPRIMIR (PDF)", bytes_pdf, "comanda.pdf", "application/pdf")
+            
+            st.success("Pedido registrado! O PDF foi carregado acima. Aperte Ctrl+P para imprimir.")
 # --- TELA 2: CARDÁPIO ---
 elif aba == "Cardápio":
     st.header("Gerenciar Cardápio")
@@ -175,6 +168,7 @@ elif aba == "Clientes":
 # --- TELA 5: RELATÓRIO ---
 elif aba == "Relatório":
     st.table(pd.DataFrame(st.session_state.vendas))
+
 
 
 
