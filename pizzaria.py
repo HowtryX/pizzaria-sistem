@@ -129,14 +129,14 @@ elif aba == "Promoções":
         prod = st.selectbox("Produto:", list(todos.keys()), key="p_prod")
         val = st.number_input("Desconto (R$):", min_value=0.0, key="p_val")
         if st.button("Adicionar"): st.session_state.promocoes.append({"produto": prod, "desconto": val}); salvar_dados('promocoes.json', st.session_state.promocoes); st.rerun()
-            for i, p in enumerate(st.session_state.promocoes):
-                c1, c2, c3 = st.columns([3, 1, 1])
-                c1.warning(f"**{p['produto']}** - Desconto: R$ {p['desconto']:.2f}")
-                if c2.button("✏️", key=f"e_{i}"): st.session_state[f"ed_{i}"] = True
-                    if c3.button("🗑️", key=f"d_{i}"): st.session_state.promocoes.pop(i); salvar_dados('promocoes.json', st.session_state.promocoes); st.rerun()
-                        if st.session_state.get(f"ed_{i}"):
-                            nv = st.number_input("Novo valor:", value=p['desconto'], key=f"n_{i}")
-                            if st.button("Confirmar", key=f"c_{i}"): st.session_state.promocoes[i]['desconto'] = nv; salvar_dados('promocoes.json', st.session_state.promocoes); st.session_state[f"ed_{i}"] = False; st.rerun()
+        for i, p in enumerate(st.session_state.promocoes):
+            c1, c2, c3 = st.columns([3, 1, 1])
+            c1.warning(f"**{p['produto']}** - Desconto: R$ {p['desconto']:.2f}")
+            if c2.button("✏️", key=f"e_{i}"): st.session_state[f"ed_{i}"] = True
+            if c3.button("🗑️", key=f"d_{i}"): st.session_state.promocoes.pop(i); salvar_dados('promocoes.json', st.session_state.promocoes); st.rerun()
+            if st.session_state.get(f"ed_{i}"):
+                nv = st.number_input("Novo valor:", value=p['desconto'], key=f"n_{i}")
+            if st.button("Confirmar", key=f"c_{i}"): st.session_state.promocoes[i]['desconto'] = nv; salvar_dados('promocoes.json', st.session_state.promocoes); st.session_state[f"ed_{i}"] = False; st.rerun()
                                 
 # --- TELA 4: CLIENTES ---
 elif aba == "Clientes":
@@ -148,6 +148,7 @@ elif aba == "Clientes":
 # --- TELA 5: RELATÓRIO ---
 elif aba == "Relatório":
 st.table(pd.DataFrame(st.session_state.vendas))
+
 
 
 
