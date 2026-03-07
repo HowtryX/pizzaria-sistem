@@ -114,7 +114,7 @@ if aba == "PDV - Pedidos":
                 salvar_dados('vendas.json', st.session_state.vendas)
                 
                 # 2. Gerar o PDF (Passando a lista do carrinho)
-                    caminho_pdf = gerar_comanda_pdf(c_sel['nome'], st.session_state.carrinho, bebs, total, obs)
+                caminho_pdf = gerar_comanda_pdf(c_sel['nome'], st.session_state.carrinho, bebs, total, obs)
                 
                 # 3. Processar Base64 para exibição
                 import base64
@@ -192,6 +192,7 @@ elif aba == "Clientes":
 # --- TELA 5: RELATÓRIO ---
 elif aba == "Relatório":
     st.table(pd.DataFrame(st.session_state.vendas))
+
 
 
 
