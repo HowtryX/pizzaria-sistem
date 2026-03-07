@@ -140,12 +140,6 @@ if aba == "PDV - Pedidos":
                         f'<a href="data:application/pdf;base64,{b64}" target="_blank" style="padding: 15px; background-color: #28a745; color: white; text-align: center; text-decoration: none; border-radius: 8px; display: block; font-weight: bold;">🖨️ ABRIR E IMPRIMIR COMANDA</a>', 
                         unsafe_allow_html=True
                     )
-                
-                # 4. Botão de Impressão (Abre em nova aba)
-                st.markdown(
-                    f'<a href="data:application/pdf;base64,{b64}" target="_blank" style="padding: 15px; background-color: #28a745; color: white; text-align: center; text-decoration: none; border-radius: 8px; display: block; font-weight: bold;">🖨️ ABRIR E IMPRIMIR COMANDA</a>', 
-                    unsafe_allow_html=True
-                )
                 # --- BOTÃO PARA LIMPAR CARRINHO / NOVA VENDA ---
                 if st.button("🔄 Nova Venda (Limpar Carrinho)"):
                     st.session_state.carrinho = []
@@ -213,6 +207,7 @@ elif aba == "Clientes":
 # --- TELA 5: RELATÓRIO ---
 elif aba == "Relatório":
     st.table(pd.DataFrame(st.session_state.vendas))
+
 
 
 
