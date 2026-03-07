@@ -151,10 +151,10 @@ if aba == "PDV - Pedidos":
             )
 
         # --- BOTÃO DE NOVA VENDA (O "Reset" real) ---
-        if st.button("🔄 INICIAR NOVO PEDIDO"):
-            st.session_state.carrinho = []
-            if 'ultimo_pdf' in st.session_state: del st.session_state.ultimo_pdf
-            st.rerun() # Limpa a memória e redesenha a tela
+            if st.button("🔄 INICIAR NOVO PEDIDO"):
+                st.session_state.carrinho = []
+                if 'ultimo_pdf' in st.session_state: del st.session_state.ultimo_pdf
+                st.rerun() # Limpa a memória e redesenha a tela
             
 elif aba == "Cardápio":
     st.header("Gerenciar Cardápio")
@@ -216,6 +216,7 @@ elif aba == "Clientes":
 # --- TELA 5: RELATÓRIO ---
 elif aba == "Relatório":
     st.table(pd.DataFrame(st.session_state.vendas))
+
 
 
 
