@@ -121,12 +121,12 @@ if aba == "PDV - Pedidos":
                     st.error("O carrinho está vazio!")
                 else:
         # 1. Salvar dados
-                nova_venda = {
-                    "Data": datetime.now().strftime("%d/%m %H:%M"), 
-                    "Cliente": c_sel['nome'], 
-                    "Itens": st.session_state.carrinho, 
-                    "Total": total, 
-                    "Obs": obs
+                    nova_venda = {
+                        "Data": datetime.now().strftime("%d/%m %H:%M"), 
+                        "Cliente": c_sel['nome'], 
+                        "Itens": st.session_state.carrinho, 
+                        "Total": total, 
+                        "Obs": obs
                 }
                 st.session_state.vendas.append(nova_venda)
                 salvar_dados('vendas.json', st.session_state.vendas)
@@ -211,6 +211,7 @@ elif aba == "Clientes":
 # --- TELA 5: RELATÓRIO ---
 elif aba == "Relatório":
     st.table(pd.DataFrame(st.session_state.vendas))
+
 
 
 
