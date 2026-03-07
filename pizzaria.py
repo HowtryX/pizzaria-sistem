@@ -106,8 +106,26 @@ if aba == "PDV - Pedidos":
                 s2 = c2.selectbox("Sabor 2", ["Nenhum"] + list(st.session_state.pizzas.keys()))
                 borda = c1.selectbox("Borda:", list(st.session_state.bordas.keys()))
                 bebs_selecionadas = c2.multiselect("Bebidas:", list(st.session_state.bebidas.keys()))
-            # ... (código da seleção de pizza + bebidas que fizemos antes) ...
-
+            
+            # --- CÁLCULO E BOTÃO ---
+            # Garantimos que o cálculo ocorra aqui
+            preco_pizza = (st.session_state.pizzas[s1] + (st.session_state.pizzas.get(s2, 0) if s2 != "Nenhum" else 0)) / 2
+            preco_borda = st.session_state.bordas.get(borda, 0)
+            preco_bebs = sum([st.session_state.bebidas.get(b, 0) for b in bebs_selecionadas])
+            total_item = preco_pizza + preco_borda + preco_bebs
+            
+            # O botão precisa estar visível logo abaixo
+            if st.button("➕ Adicionar ao Carrinho", key="add_manual"):
+                st.session_state.carrinho.append({
+                    "s1": s1, 
+                    "s2": s2, 
+                    "borda": borda, 
+                    "bebidas": bebs_selecionadas,
+                    "preco": total_item
+                })
+                st.success(f"Item adicionado! R$ {total_item:.2f}")
+                st.rerun()
+               
         # 3. CARRINHO (Aparece sempre que houver cliente selecionado)
             st.write("---")
             st.write("### 🛒 Carrinho")
@@ -235,6 +253,7 @@ elif aba == "Promoções":
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.dataframe(pd.DataFrame(st.session_state.vendas))
+
 
 
 
