@@ -92,15 +92,14 @@ if aba == "PDV - Pedidos":
             salvar_dados('vendas.json', st.session_state.vendas)
         
         # 2. Gerar o PDF
-        caminho_pdf = gerar_comanda_pdf(c_sel['nome'], s1, s2, borda_sel, bebs, total, obs)
+            caminho_pdf = gerar_comanda_pdf(c_sel['nome'], s1, s2, borda_sel, bebs, total, obs)
         
         # 3. Processar e exibir DENTRO do mesmo bloco identado
-        import base64
-        with open(caminho_pdf, "rb") as f:
-            bytes_data = f.read()
-            b64 = base64.b64encode(bytes_data).decode('utf-8')
+            with open(caminho_pdf, "rb") as f:
+                bytes_data = f.read()
+                b64 = base64.b64encode(bytes_data).decode('utf-8')
         
-        st.success("Pedido registrado!")
+            st.success("Pedido registrado!")
         
         # O markdown agora está no mesmo nível que o 'with open', portanto 'b64' existe aqui dentro
         st.markdown(
@@ -167,6 +166,7 @@ elif aba == "Clientes":
 # --- TELA 5: RELATÓRIO ---
 elif aba == "Relatório":
     st.table(pd.DataFrame(st.session_state.vendas))
+
 
 
 
