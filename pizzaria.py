@@ -147,9 +147,9 @@ if aba == "PDV - Pedidos":
                     unsafe_allow_html=True
                 )
                 # --- BOTÃO PARA LIMPAR CARRINHO / NOVA VENDA ---
-                    if st.button("🔄 Nova Venda (Limpar Carrinho)"):
-                        st.session_state.carrinho = []
-                        st.rerun()
+                if st.button("🔄 Nova Venda (Limpar Carrinho)"):
+                    st.session_state.carrinho = []
+                    st.rerun()
                 # Opcional: Limpar carrinho após registrar
                 # st.session_state.carrinho = []
             
@@ -213,6 +213,7 @@ elif aba == "Clientes":
 # --- TELA 5: RELATÓRIO ---
 elif aba == "Relatório":
     st.table(pd.DataFrame(st.session_state.vendas))
+
 
 
 
