@@ -84,8 +84,7 @@ if aba == "PDV - Pedidos":
         
         total = (preco_base + v_borda + preco_bebs + taxa_entrega) - desc
         st.subheader(f"💰 Total: R$ {total:.2f}")
-
-if st.button("✅ FINALIZAR E IMPRIMIR"):
+        if st.button("✅ FINALIZAR E IMPRIMIR"):
             # 1. Salvar dados
             nova_venda = {"Data": datetime.now().strftime("%d/%m %H:%M"), "Cliente": c_sel['nome'], "Total": total, "Obs": obs}
             st.session_state.vendas.append(nova_venda)
@@ -168,6 +167,7 @@ elif aba == "Clientes":
 # --- TELA 5: RELATÓRIO ---
 elif aba == "Relatório":
     st.table(pd.DataFrame(st.session_state.vendas))
+
 
 
 
