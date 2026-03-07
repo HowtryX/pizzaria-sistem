@@ -18,15 +18,15 @@ def ler_dados(aba):
         return conn.read(worksheet=aba, ttl=0)
     except Exception:
         return pd.DataFrame()
-
 def salvar_dados_sheets(df, aba):
-    """Atualiza a planilha do Google com o novo DataFrame."""
     try:
-        conn.update(worksheet=aba, data=df)
-        st.cache_data.clear() # Limpa o cache para que a próxima leitura venha atualizada
+        # Remove linhas onde o nome/sabor esteja vazio
+        df_limpo = df.dropna(how='all') 
+        conn.update(worksheet=aba, data=df_limpo)
+        st.cache_data.clear()
+        st.success(f"✅ Dados salvos na aba {aba}!")
     except Exception as e:
-        st.error(f"Erro ao salvar na planilha: {e}")
-
+        st.error(f"Erro ao salvar: {e}")
 # --- INICIALIZAÇÃO E CARGA DE DADOS ---
 if 'carrinho' not in st.session_state: st.session_state.carrinho = []
 
@@ -149,26 +149,38 @@ if aba == "PDV - Pedidos":
                 st.rerun()
 
 # --- TELA: CARDÁPIO (GESTÃO) ---
+# --- TELA: CARDÁPIO (GESTÃO) ---
 elif aba == "Cardápio":
     st.header("⚙️ Gestão de Cardápio")
-    aba_p, aba_b = st.tabs(["🍕 Pizzas", "🧀 Bordas"])
+    # Adicionada a aba de Bebidas aqui
+    aba_p, aba_b, aba_be = st.tabs(["🍕 Pizzas", "🧀 Bordas", "🥤 Bebidas"])
     
     with aba_p:
-        df_p = pd.DataFrame(list(st.session_state.pizzas.items()), columns=["Sabor", "Preço"])
+        # IMPORTANTE: Use exatamente o nome dos cabeçalhos da planilha
+        df_p = ler_dados("pizzas")
         ed_p = st.data_editor(df_p, num_rows="dynamic", use_container_width=True)
         if st.button("💾 Salvar Pizzas"):
             salvar_dados_sheets(ed_p, "pizzas")
             st.rerun()
 
+    with aba_be:
+        df_be = ler_dados("bebidas")
+        ed_be = st.data_editor(df_be, num_rows="dynamic", use_container_width=True)
+        if st.button("💾 Salvar Bebidas"):
+            salvar_dados_sheets(ed_be, "bebidas")
+            st.rerun()
+
 # --- TELA: CLIENTES ---
 elif aba == "Clientes":
     st.header("👥 Gestão de Clientes")
-    df_c = pd.DataFrame(st.session_state.clientes) if st.session_state.clientes else pd.DataFrame(columns=["nome", "telefone", "endereco"])
+    df_c = ler_dados("clientes")
+    
+    # O data_editor vai mostrar o que veio da planilha
     ed_c = st.data_editor(df_c, num_rows="dynamic", use_container_width=True)
+    
     if st.button("💾 Salvar Clientes"):
         salvar_dados_sheets(ed_c, "clientes")
         st.rerun()
-
 # --- TELA: RELATÓRIO ---
 elif aba == "Relatório":
     st.header("📊 Relatório de Vendas")
@@ -178,3 +190,4 @@ elif aba == "Relatório":
         st.metric("Total Faturado", f"R$ {df_v['total'].sum():.2f}")
     else:
         st.info("Nenhuma venda no sistema.")
+
