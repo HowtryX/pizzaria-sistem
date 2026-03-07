@@ -260,47 +260,84 @@ elif aba == "Clientes":
     else:
         st.warning("Nenhum cliente cadastrado no sistema.")
 # --- TELA 3: PROMOÇÕES ---
+# --- TELA: PROMOÇÕES (EDIÇÃO E EXCLUSÃO) ---
 elif aba == "Promoções":
     st.header("🎁 Gestão de Promoções")
-    
-    with st.form("cad_promo", clear_on_submit=True):
-        nome_p = st.text_input("Nome do Combo (Ex: Combo Família)")
-        col1, col2 = st.columns(2)
-        qtd_p = col1.number_input("Qtd de Pizzas no Combo", min_value=1, value=2)
-        preco_p = col2.number_input("Preço Total do Combo (R$)", min_value=0.0)
-        
-        c1, c2 = st.columns(2)
-        s1_p = c1.selectbox("Sabor Padrão 1", list(st.session_state.pizzas.keys()))
-        ent_p = c2.checkbox("Entrega Grátis neste Combo?")
-        
-        if st.form_submit_button("💾 Salvar Promoção"):
-            nova_promo = {
-                "nome": nome_p or "Combo Especial",
-                "qtd_pizzas": qtd_p,
-                "itens": {"s1": s1_p, "s2": "Nenhum", "borda": "Sem Borda"},
-                "preco_promocional": preco_p,
-                "entrega_inclusa": ent_p
-            }
-            st.session_state.promocoes.append(nova_promo)
-            salvar_dados('promocoes.json', st.session_state.promocoes)
-            st.success("Promoção Gravada!")
-            st.rerun()
 
-    st.write("---")
-    st.subheader("Promoções Ativas")
-    for i, p in enumerate(st.session_state.promocoes):
-        with st.container(border=True):
-            c_info, c_del = st.columns([4, 1])
-            c_info.write(f"**{p.get('nome')}** - {p.get('qtd_pizzas')} Pizzas por R$ {p.get('preco_promocional'):.2f}")
-            if c_del.button("🗑️", key=f"del_promo_{i}"):
-                st.session_state.promocoes.pop(i)
+    # 1. Formulário para Nova Promoção
+    with st.expander("➕ Criar Novo Combo / Promoção"):
+        with st.form("form_nova_promo", clear_on_submit=True):
+            nome_p = st.text_input("Nome do Combo")
+            c1, c2, c3 = st.columns(3)
+            qtd_p = c1.number_input("Qtd Pizzas", min_value=1, value=1)
+            preco_p = c2.number_input("Preço Total (R$)", min_value=0.0)
+            ent_p = c3.checkbox("Entrega Grátis?")
+            
+            s1_p = st.selectbox("Sabor Base", list(st.session_state.pizzas.keys()))
+            
+            if st.form_submit_button("Salvar Promoção"):
+                nova_promo = {
+                    "nome": nome_p or "Combo Novo",
+                    "qtd_pizzas": qtd_p,
+                    "itens": {"s1": s1_p, "s2": "Nenhum", "borda": "Sem Borda"},
+                    "preco_promocional": preco_p,
+                    "entrega_inclusa": ent_p
+                }
+                st.session_state.promocoes.append(nova_promo)
                 salvar_dados('promocoes.json', st.session_state.promocoes)
+                st.success("Promoção cadastrada!")
                 st.rerun()
 
+    st.write("---")
+    st.subheader("📋 Promoções Ativas")
+    st.info("💡 Edite os valores diretamente na tabela ou selecione a linha e aperte 'Delete' para apagar.")
+
+    if st.session_state.promocoes:
+        # Preparamos os dados para a tabela (extraindo o que está dentro de 'itens')
+        dados_promo = []
+        for p in st.session_state.promocoes:
+            dados_promo.append({
+                "Nome": p.get('nome'),
+                "Qtd Pizzas": p.get('qtd_pizzas'),
+                "Preço": p.get('preco_promocional'),
+                "Entrega Grátis": p.get('entrega_inclusa'),
+                "Sabor Base": p.get('itens', {}).get('s1')
+            })
+        
+        df_promo = pd.DataFrame(dados_promo)
+        
+        # Editor de Dados
+        df_editado = st.data_editor(
+            df_promo,
+            num_rows="dynamic",
+            use_container_width=True,
+            key="editor_promocoes"
+        )
+        
+        # 2. Botão para Salvar Alterações
+        if st.button("💾 Salvar Alterações em Promoções"):
+            nova_lista_promos = []
+            for _, row in df_editado.iterrows():
+                if row["Nome"]: # Evita salvar linhas vazias
+                    nova_lista_promos.append({
+                        "nome": row["Nome"],
+                        "qtd_pizzas": row["Qtd Pizzas"],
+                        "preco_promocional": row["Preço"],
+                        "entrega_inclusa": row["Entrega Grátis"],
+                        "itens": {"s1": row["Sabor Base"], "s2": "Nenhum", "borda": "Sem Borda"}
+                    })
+            
+            st.session_state.promocoes = nova_lista_promos
+            salvar_dados('promocoes.json', st.session_state.promocoes)
+            st.success("✅ Promoções atualizadas!")
+            st.rerun()
+    else:
+        st.warning("Nenhuma promoção ativa.")
 # --- TELA: RELATÓRIO ---
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.dataframe(pd.DataFrame(st.session_state.vendas))
+
 
 
 
