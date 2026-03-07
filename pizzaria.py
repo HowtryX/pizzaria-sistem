@@ -72,15 +72,24 @@ aba = st.sidebar.radio("Navegação:", ["PDV - Pedidos", "Cardápio", "Promoçõ
 # --- TELA 1: PDV ---
 if aba == "PDV - Pedidos":
     st.header("🛒 Terminal de Vendas")
+    
+    # 1. Seleção de Cliente
     nome_busca = st.text_input("🔍 Buscar cliente:")
     resultados = [c for c in st.session_state.clientes if nome_busca.lower() in c.get('nome', '').lower()]
     
-    if nome_busca and resultados:
+    c_sel = None
+    if resultados:
         c_sel = st.selectbox("Selecione o cliente:", resultados, format_func=lambda x: x['nome'])
+    else:
+        st.warning("⚠️ Digite um nome para buscar o cliente.")
+
+    if c_sel:
+        # 2. SELEÇÃO DE ITENS (O que sumiu!)
+        st.subheader("➕ Adicionar ao Pedido")
+        tab_promo, tab_manual = st.tabs(["🎁 Promoções/Combos", "🍕 Seleção Manual"])
         
-        # Aplicar Promoção
-        if st.session_state.promocoes:
-            with st.expander("🎁 Aplicar Promoção (Combo)"):
+        with tab_promo:
+            if st.session_state.promocoes:
                 p_sel = st.selectbox("Escolha o combo:", st.session_state.promocoes, format_func=lambda x: x.get('nome', 'Sem Nome'))
                 if st.button("Aplicar Promoção"):
                     for _ in range(p_sel.get('qtd_pizzas', 1)):
@@ -93,19 +102,41 @@ if aba == "PDV - Pedidos":
                         })
                     st.rerun()
 
-        # Carrinho
+        with tab_manual:
+            c1, c2 = st.columns(2)
+            s1 = c1.selectbox("Sabor 1", list(st.session_state.pizzas.keys()))
+            s2 = c2.selectbox("Sabor 2", ["Nenhum"] + list(st.session_state.pizzas.keys()))
+            borda = c1.selectbox("Borda:", list(st.session_state.bordas.keys()))
+            
+            # Cálculo do preço manual: média dos sabores + borda
+            preco_manual = (st.session_state.pizzas[s1] + (st.session_state.pizzas.get(s2, 0) if s2 != "Nenhum" else 0)) / 2
+            preco_manual += st.session_state.bordas[borda]
+            
+            if st.button("Adicionar Pizza ao Carrinho"):
+                st.session_state.carrinho.append({"s1": s1, "s2": s2, "borda": borda, "preco": preco_manual})
+                st.rerun()
+
+        # 3. Carrinho
         if st.session_state.carrinho:
+            st.write("---")
             st.write("### 🛒 Carrinho")
+            # Exibe itens para conferência
+            for i, item in enumerate(st.session_state.carrinho):
+                st.write(f"{item['s1']} + {item['s2']} | Borda: {item['borda']} - R$ {item['preco']:.2f}")
+            
             total_pizzas = sum(item.get('preco', 0) for item in st.session_state.carrinho)
             entrega_gratis = any(item.get('entrega_gratis', False) for item in st.session_state.carrinho)
             taxa_entrega = st.number_input("Taxa de Entrega (R$):", value=0.0 if entrega_gratis else 8.0)
-            st.subheader(f"💰 Total: R$ {total_pizzas + taxa_entrega:.2f}")
             
-            if st.button("✅ Finalizar"):
+            st.subheader(f"💰 Total do Pedido: R$ {total_pizzas + taxa_entrega:.2f}")
+            
+            if st.button("✅ Finalizar Pedido"):
+                # (Lógica de salvar aqui permanece a mesma)
                 nova_venda = {"Data": datetime.now().strftime("%d/%m %H:%M"), "Cliente": c_sel['nome'], "Itens": st.session_state.carrinho, "Total": total_pizzas + taxa_entrega}
                 st.session_state.vendas.append(nova_venda)
                 salvar_dados('vendas.json', st.session_state.vendas)
-                st.session_state.ultimo_pdf = gerar_comanda_pdf(c_sel['nome'], st.session_state.carrinho, [], total_pizzas + taxa_entrega, "")
+                st.session_state.carrinho = []
+                st.success("Pedido finalizado com sucesso!")
                 st.rerun()
 
             if 'ultimo_pdf' in st.session_state:
@@ -141,31 +172,36 @@ elif aba == "Clientes":
 
 # --- TELA 3: PROMOÇÕES ---
 # --- TELA 3: PROMOÇÕES ---
+# --- TELA 3: PROMOÇÕES (SUBSTITUA TODO O BLOCO) ---
 elif aba == "Promoções":
     st.header("🎁 Criar Promoção")
+    
     with st.expander("➕ Nova Promoção"):
-        nome = st.text_input("Nome")
+        nome = st.text_input("Nome da Promoção")
         qtd = st.number_input("Qtd Pizzas", min_value=1, value=1)
         s1 = st.selectbox("Sabor 1", list(st.session_state.pizzas.keys()))
+        s2 = st.selectbox("Sabor 2", ["Nenhum"] + list(st.session_state.pizzas.keys()))
+        borda = st.selectbox("Borda:", list(st.session_state.bordas.keys()))
         preco = st.number_input("Preço Promocional", min_value=0.0)
         ent = st.checkbox("Entrega Grátis?")
+        
         if st.button("Salvar Promoção"):
-            st.session_state.promocoes.append({"nome": nome, "qtd_pizzas": qtd, "itens": {"s1": s1, "s2": "Nenhum", "borda": "Sem Borda"}, "preco_promocional": preco, "entrega_inclusa": ent})
+            nova_promo = {
+                "nome": nome or "Promoção Sem Nome",
+                "qtd_pizzas": qtd,
+                "itens": {"s1": s1, "s2": s2, "borda": borda},
+                "preco_promocional": preco,
+                "entrega_inclusa": ent
+            }
+            st.session_state.promocoes.append(nova_promo)
             salvar_dados('promocoes.json', st.session_state.promocoes)
+            st.success("Promoção salva!")
             st.rerun()
     
-    for i, p in enumerate(st.session_state.promocoes):
-        with st.container(border=True):
-            st.write(f"**{p.get('nome')}** - R$ {p.get('preco_promocional')}")
-            if st.button("🗑️ Remover", key=f"del_{i}"):
-                st.session_state.promocoes.pop(i)
-                salvar_dados('promocoes.json', st.session_state.promocoes)
-                st.rerun()
-
-    # Exibição das promoções existentes
     st.subheader("Promoções Ativas")
+    # Apenas um loop de exibição para evitar duplicidade
     for i, p in enumerate(st.session_state.promocoes):
-        # AQUI ESTÁ A PROTEÇÃO: usamos .get() para não dar KeyError
+        # Proteção com .get() para evitar KeyError
         nome = p.get('nome', 'Promoção Sem Nome')
         qtd = p.get('qtd_pizzas', 1)
         itens = p.get('itens', {})
@@ -174,10 +210,10 @@ elif aba == "Promoções":
         with st.container(border=True):
             col_info, col_del = st.columns([5, 1])
             col_info.markdown(f"### {nome}")
-            col_info.write(f"🍕 Qtd: {qtd} | Sabor: {itens.get('s1')} + {itens.get('s2')}")
+            col_info.write(f"🍕 Qtd: {qtd} | Sabores: {itens.get('s1')} + {itens.get('s2')} | Borda: {itens.get('borda')}")
             col_info.subheader(f"💰 Preço: R$ {preco:.2f}")
             
-            if col_del.button("🗑️", key=f"del_p_{i}"):
+            if col_del.button("🗑️", key=f"del_promo_{i}"):
                 st.session_state.promocoes.pop(i)
                 salvar_dados('promocoes.json', st.session_state.promocoes)
                 st.rerun()
@@ -186,6 +222,7 @@ elif aba == "Promoções":
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.dataframe(pd.DataFrame(st.session_state.vendas))
+
 
 
 
