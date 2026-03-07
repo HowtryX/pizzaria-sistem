@@ -83,49 +83,66 @@ if aba == "PDV - Pedidos":
     
     if c_sel:
         # 2. Abas de Seleção
-            tab_promo, tab_manual = st.tabs(["🎁 Combos", "🍕 Seleção Manual"])
+            # 2. SELEÇÃO DE ITENS
+        st.subheader("➕ Adicionar ao Pedido")
+        tab_promo, tab_manual = st.tabs(["🎁 Combos/Promoções", "🍕 Seleção Manual"])
         
-            with tab_promo:
-                if st.session_state.promocoes:
-                    p_sel = st.selectbox("Escolha o combo:", st.session_state.promocoes, format_func=lambda x: x.get('nome', 'Sem Nome'))
-                    if st.button("Aplicar Promoção"):
-                        for _ in range(p_sel.get('qtd_pizzas', 1)):
-                            st.session_state.carrinho.append({
-                                "s1": p_sel['itens'].get('s1', 'Mussarela'), 
-                                "s2": p_sel['itens'].get('s2', 'Nenhum'), 
-                                "borda": p_sel['itens'].get('borda', 'Sem Borda'), 
-                                "preco": p_sel.get('preco_promocional', 0.0) / p_sel.get('qtd_pizzas', 1),
-                                "entrega_gratis": p_sel.get('entrega_inclusa', False)
-                            })
-                            st.rerun()
-            # ... (código do expander de promoções que fizemos antes) ...
+        with tab_promo:
+            if st.session_state.promocoes:
+                # Criamos uma chave única para o selectbox de promoção
+                p_sel = st.selectbox(
+                    "Escolha o combo desejado:", 
+                    st.session_state.promocoes, 
+                    format_func=lambda x: f"{x.get('nome')} - R$ {x.get('preco_promocional'):.2f}",
+                    key="sb_promo_pdv"
+                )
                 
-            with tab_manual:
-                c1, c2 = st.columns(2)
-                s1 = c1.selectbox("Sabor 1", list(st.session_state.pizzas.keys()))
-                s2 = c2.selectbox("Sabor 2", ["Nenhum"] + list(st.session_state.pizzas.keys()))
-                borda = c1.selectbox("Borda:", list(st.session_state.bordas.keys()))
-                bebs_selecionadas = c2.multiselect("Bebidas:", list(st.session_state.bebidas.keys()))
+                if st.button("🚀 Aplicar Este Combo", key="btn_aplicar_promo"):
+                    # Pegamos os dados EXATOS da promoção selecionada no selectbox acima
+                    qtd = p_sel.get('qtd_pizzas', 1)
+                    preco_unitario = p_sel.get('preco_promocional', 0.0) / qtd
+                    
+                    for _ in range(qtd):
+                        st.session_state.carrinho.append({
+                            "s1": p_sel['itens'].get('s1', 'Mussarela'), 
+                            "s2": p_sel['itens'].get('s2', 'Nenhum'), 
+                            "borda": p_sel['itens'].get('borda', 'Sem Borda'), 
+                            "preco": preco_unitario,
+                            "entrega_gratis": p_sel.get('entrega_inclusa', False),
+                            "tipo": "Promoção" # Identificador para não confundir
+                        })
+                    st.success(f"Combo '{p_sel.get('nome')}' adicionado!")
+                    st.rerun()
+            else:
+                st.info("Nenhuma promoção cadastrada no sistema.")
+
+        with tab_manual:
+            c1, c2 = st.columns(2)
+            s1_m = c1.selectbox("Sabor 1", list(st.session_state.pizzas.keys()), key="sb_s1_manual")
+            s2_m = c2.selectbox("Sabor 2", ["Nenhum"] + list(st.session_state.pizzas.keys()), key="sb_s2_manual")
+            borda_m = c1.selectbox("Borda:", list(st.session_state.bordas.keys()), key="sb_borda_manual")
+            bebs_m = c2.multiselect("Bebidas:", list(st.session_state.bebidas.keys()), key="ms_bebs_manual")
             
-            # --- CÁLCULO E BOTÃO ---
-            # Garantimos que o cálculo ocorra aqui
-            preco_pizza = (st.session_state.pizzas[s1] + (st.session_state.pizzas.get(s2, 0) if s2 != "Nenhum" else 0)) / 2
-            preco_borda = st.session_state.bordas.get(borda, 0)
-            preco_bebs = sum([st.session_state.bebidas.get(b, 0) for b in bebs_selecionadas])
-            total_item = preco_pizza + preco_borda + preco_bebs
+            # Cálculo Manual
+            p1 = st.session_state.pizzas.get(s1_m, 0)
+            p2 = st.session_state.pizzas.get(s2_m, 0) if s2_m != "Nenhum" else p1
+            preco_pizza = (p1 + p2) / 2
+            preco_borda = st.session_state.bordas.get(borda_m, 0)
+            preco_bebs = sum([st.session_state.bebidas.get(b, 0) for b in bebs_m])
             
-            # O botão precisa estar visível logo abaixo
-            if st.button("➕ Adicionar ao Carrinho", key="add_manual"):
+            total_m = preco_pizza + preco_borda + preco_bebs
+            
+            if st.button("🍕 Adicionar Pizza Manual", key="btn_add_manual"):
                 st.session_state.carrinho.append({
-                    "s1": s1, 
-                    "s2": s2, 
-                    "borda": borda, 
-                    "bebidas": bebs_selecionadas,
-                    "preco": total_item
+                    "s1": s1_m, 
+                    "s2": s2_m, 
+                    "borda": borda_m, 
+                    "bebidas": bebs_m,
+                    "preco": total_m,
+                    "tipo": "Manual"
                 })
-                st.success(f"Item adicionado! R$ {total_item:.2f}")
+                st.success("Pizza manual adicionada!")
                 st.rerun()
-               
         # 3. CARRINHO (Aparece sempre que houver cliente selecionado)
             st.write("---")
             st.write("### 🛒 Carrinho")
@@ -337,6 +354,7 @@ elif aba == "Promoções":
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.dataframe(pd.DataFrame(st.session_state.vendas))
+
 
 
 
