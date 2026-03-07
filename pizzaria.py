@@ -81,19 +81,25 @@ if aba == "PDV - Pedidos":
         c_sel = st.selectbox("Selecione o cliente:", resultados, format_func=lambda x: x['nome'])
         
         # --- NOVO: APLICAR PROMOÇÃO ---
+        # --- BLOCO CORRIGIDO DE APLICAR PROMOÇÃO NO PDV ---
         if st.session_state.promocoes:
             with st.expander("🎁 Aplicar Promoção (Combo)"):
-                p_sel = st.selectbox("Escolha o combo:", st.session_state.promocoes, format_func=lambda x: x['nome'])
+                # Se algum item antigo não tiver 'nome', exibimos "Promoção Antiga"
+                p_sel = st.selectbox(
+                    "Escolha o combo:", 
+                    st.session_state.promocoes, 
+                    format_func=lambda x: x.get('nome', 'Promoção Sem Nome')
+                )
+                
                 if st.button("Aplicar Promoção"):
-                    # Adiciona a quantidade de pizzas do combo
                     for _ in range(p_sel.get('qtd_pizzas', 1)):
                         st.session_state.carrinho.append({
-                            "s1": p_sel['itens']['s1'], 
-                            "s2": p_sel['itens']['s2'], 
-                            "borda": p_sel['itens']['borda'], 
-                            "preco": p_sel['preco_promocional'] / p_sel.get('qtd_pizzas', 1) # Divide o preço pelas pizzas
+                            "s1": p_sel['itens'].get('s1', 'Mussarela'), 
+                            "s2": p_sel['itens'].get('s2', 'Nenhum'), 
+                            "borda": p_sel['itens'].get('borda', 'Sem Borda'), 
+                            "preco": p_sel.get('preco_promocional', 0.0) / p_sel.get('qtd_pizzas', 1)
                         })
-                    st.success(f"Combo {p_sel['nome']} aplicado!")
+                    st.success(f"Combo aplicado!")
                     st.rerun()
 
         # --- SELEÇÃO NORMAL ---
@@ -191,24 +197,19 @@ elif aba == "Promoções":
     # Exibição das promoções existentes
     st.subheader("Promoções Ativas")
     for i, p in enumerate(st.session_state.promocoes):
-        # Proteção contra erros de chave com .get()
-        nome = p.get('nome', 'Promoção')
-        qtd = p.get('qtd_pizzas', 1) # Padrão 1 se não existir
+        # AQUI ESTÁ A PROTEÇÃO: usamos .get() para não dar KeyError
+        nome = p.get('nome', 'Promoção Sem Nome')
+        qtd = p.get('qtd_pizzas', 1)
         itens = p.get('itens', {})
         preco = p.get('preco_promocional', 0.0)
-        entrega = p.get('entrega_inclusa', False)
         
         with st.container(border=True):
-            col1, col2 = st.columns([5, 1])
-            col1.markdown(f"### {nome}")
-            col1.write(f"🍕 **Quantidade:** {qtd} pizza(s) | Sabor: {itens.get('s1')} + {itens.get('s2')}")
-            col1.write(f"🥤 Bebidas: {', '.join(itens.get('bebidas', [])) if itens.get('bebidas') else 'Nenhuma'}")
-            col1.subheader(f"💰 Preço: R$ {preco:.2f}")
+            col_info, col_del = st.columns([5, 1])
+            col_info.markdown(f"### {nome}")
+            col_info.write(f"🍕 Qtd: {qtd} | Sabor: {itens.get('s1')} + {itens.get('s2')}")
+            col_info.subheader(f"💰 Preço: R$ {preco:.2f}")
             
-            # Label de entrega
-            if entrega: col1.success("🚚 Entrega Grátis!")
-            
-            if col2.button("🗑️", key=f"del_p_{i}"):
+            if col_del.button("🗑️", key=f"del_p_{i}"):
                 st.session_state.promocoes.pop(i)
                 salvar_dados('promocoes.json', st.session_state.promocoes)
                 st.rerun()
@@ -217,6 +218,7 @@ elif aba == "Promoções":
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.table(pd.DataFrame(st.session_state.vendas))
+
 
 
 
