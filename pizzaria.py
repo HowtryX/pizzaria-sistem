@@ -95,32 +95,32 @@ elif aba == "Cardápio":
         st.subheader("Pizzas")
         df_p = pd.DataFrame(list(st.session_state.pizzas.items()), columns=["Sabor", "Preço"])
         edited_p = st.data_editor(df_p, use_container_width=True)
-        with st.expander("➕ Adicionar Pizza"):
+        with st.expander("➕ Adicionar Pizza"):
             n_p = st.text_input("Nome", key="np_n"); v_p = st.number_input("Preço", key="np_v")
             if st.button("Salvar Pizza"): st.session_state.pizzas[n_p] = v_p; salvar_dados('pizzas.json', st.session_state.pizzas); st.rerun()
                 
     with c2:
-        st.subheader("Bebidas")
-        df_b = pd.DataFrame(list(st.session_state.bebidas.items()), columns=["Bebida", "Preço"])
-        edited_b = st.data_editor(df_b, use_container_width=True)
-        with st.expander("➕ Adicionar Bebida"):
-            n_b = st.text_input("Nome", key="nb_n"); v_b = st.number_input("Preço", key="nb_v")
-            if st.button("Salvar Bebida"): st.session_state.bebidas[n_b] = v_b; salvar_dados('bebidas.json', st.session_state.bebidas); st.rerun()
-
+        st.subheader("Bebidas")
+        df_b = pd.DataFrame(list(st.session_state.bebidas.items()), columns=["Bebida", "Preço"])
+        edited_b = st.data_editor(df_b, use_container_width=True)
+        with st.expander("➕ Adicionar Bebida"):
+            n_b = st.text_input("Nome", key="nb_n"); v_b = st.number_input("Preço", key="nb_v")
+            if st.button("Salvar Bebida"): st.session_state.bebidas[n_b] = v_b; salvar_dados('bebidas.json', st.session_state.bebidas); st.rerun()
+                
     with c3:
-        st.subheader("Bordas")
-        df_bor = pd.DataFrame(list(st.session_state.bordas.items()), columns=["Borda", "Preço"])
-        edited_bor = st.data_editor(df_bor, use_container_width=True)
-        with st.expander("➕ Adicionar Borda"):
-            n_bor = st.text_input("Nome", key="bor_n"); v_bor = st.number_input("Preço", key="bor_v")
-            if st.button("Salvar Borda"): st.session_state.bordas[n_bor] = v_bor; salvar_dados('bordas.json', st.session_state.bordas); st.rerun()
-    
-    if st.button("💾 Salvar Alterações Gerais"):
-        st.session_state.pizzas = dict(zip(edited_p["Sabor"], edited_p["Preço"]))
-        st.session_state.bebidas = dict(zip(edited_b["Bebida"], edited_b["Preço"]))
-        st.session_state.bordas = dict(zip(edited_bor["Borda"], edited_bor["Preço"]))
-        salvar_dados('pizzas.json', st.session_state.pizzas); salvar_dados('bebidas.json', st.session_state.bebidas); salvar_dados('bordas.json', st.session_state.bordas); st.rerun()
-
+        st.subheader("Bordas")
+        df_bor = pd.DataFrame(list(st.session_state.bordas.items()), columns=["Borda", "Preço"])
+        edited_bor = st.data_editor(df_bor, use_container_width=True)
+        with st.expander("➕ Adicionar Borda"):
+            n_bor = st.text_input("Nome", key="bor_n"); v_bor = st.number_input("Preço", key="bor_v")
+            if st.button("Salvar Borda"): st.session_state.bordas[n_bor] = v_bor; salvar_dados('bordas.json', st.session_state.bordas); st.rerun()
+                
+        if st.button("💾 Salvar Alterações Gerais"):
+            st.session_state.pizzas = dict(zip(edited_p["Sabor"], edited_p["Preço"]))
+            st.session_state.bebidas = dict(zip(edited_b["Bebida"], edited_b["Preço"]))
+            st.session_state.bordas = dict(zip(edited_bor["Borda"], edited_bor["Preço"]))
+            salvar_dados('pizzas.json', st.session_state.pizzas); salvar_dados('bebidas.json', st.session_state.bebidas); salvar_dados('bordas.json', st.session_state.bordas); st.rerun()
+            
 # --- TELA 3: PROMOÇÕES ---
 elif aba == "Promoções":
     st.header("🎁 Promoções Ativas")
@@ -140,15 +140,15 @@ elif aba == "Promoções":
 
 # --- TELA 4: CLIENTES ---
 elif aba == "Clientes":
-    with st.form("cad"):
-        n = st.text_input("Nome"); t = st.text_input("Telefone"); e = st.text_area("Endereço")
-        if st.form_submit_button("Cadastrar"): st.session_state.clientes.append({"nome": n, "telefone": t, "endereco": e}); salvar_dados('clientes.json', st.session_state.clientes); st.rerun()
-    st.table(pd.DataFrame(st.session_state.clientes))
+    with st.form("cad"):
+        n = st.text_input("Nome"); t = st.text_input("Telefone"); e = st.text_area("Endereço")
+        if st.form_submit_button("Cadastrar"): st.session_state.clientes.append({"nome": n, "telefone": t, "endereco": e}); salvar_dados('clientes.json', st.session_state.clientes); st.rerun()
+            st.table(pd.DataFrame(st.session_state.clientes))
 
 # --- TELA 5: RELATÓRIO ---
 elif aba == "Relatório":
-    st.table(pd.DataFrame(st.session_state.vendas))
- implementa nesse codigo
+st.table(pd.DataFrame(st.session_state.vendas))
+
 
 
 
