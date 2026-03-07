@@ -90,22 +90,22 @@ if aba == "PDV - Pedidos":
             st.session_state.vendas.append(nova_venda)
             salvar_dados('vendas.json', st.session_state.vendas)
             
-            # 2. Gerar o PDF
-            caminho_pdf = gerar_comanda_pdf(c_sel['nome'], s1, s2, borda_sel, bebs, total, obs)
+                # 2. Gerar o PDF
+                caminho_pdf = gerar_comanda_pdf(c_sel['nome'], s1, s2, borda_sel, bebs, total, obs)
             
-            # 3. Exibir o PDF para o usuário e oferecer a impressão
-            import base64
-            with open(caminho_pdf, "rb") as f:
-                bytes_pdf = f.read()
-                b64_pdf = base64.b64encode(bytes_pdf).decode('utf-8')
+                # 3. Exibir o PDF para o usuário e oferecer a impressão
+                import base64
+                with open(caminho_pdf, "rb") as f:
+                    bytes_pdf = f.read()
+                    b64_pdf = base64.b64encode(bytes_pdf).decode('utf-8')
             
             # Exibe o PDF diretamente na tela (iframe)
-            st.markdown(f'<iframe src="data:application/pdf;base64,{b64_pdf}" width="100%" height="600px"></iframe>', unsafe_allow_html=True)
+                st.markdown(f'<iframe src="data:application/pdf;base64,{b64_pdf}" width="100%" height="600px"></iframe>', unsafe_allow_html=True)
             
             # Botão de download como backup
-            st.download_button("🖨️ CLIQUE AQUI PARA IMPRIMIR (PDF)", bytes_pdf, "comanda.pdf", "application/pdf")
+                st.download_button("🖨️ CLIQUE AQUI PARA IMPRIMIR (PDF)", bytes_pdf, "comanda.pdf", "application/pdf")
             
-            st.success("Pedido registrado! O PDF foi carregado acima. Aperte Ctrl+P para imprimir.")
+                st.success("Pedido registrado! O PDF foi carregado acima. Aperte Ctrl+P para imprimir.")
 # --- TELA 2: CARDÁPIO ---
 elif aba == "Cardápio":
     st.header("Gerenciar Cardápio")
@@ -167,6 +167,7 @@ elif aba == "Clientes":
 # --- TELA 5: RELATÓRIO ---
 elif aba == "Relatório":
     st.table(pd.DataFrame(st.session_state.vendas))
+
 
 
 
