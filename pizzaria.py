@@ -89,8 +89,8 @@ if aba == "PDV - Pedidos":
 # --- (O resto do seu código permanece o mesmo para as outras abas) ---
 # --- TELA 2: CARDÁPIO ---
 elif aba == "Cardápio":
-    st.header("Gerenciar Cardápio")
-    c1, c2, c3 = st.columns(3)
+    st.header("Gerenciar Cardápio")
+    c1, c2, c3 = st.columns(3)
     
     with c1:
         st.subheader("Pizzas")
@@ -150,6 +150,7 @@ elif aba == "Clientes":
 elif aba == "Relatório":
     st.table(pd.DataFrame(st.session_state.vendas))
  implementa nesse codigo
+
 
 
 
