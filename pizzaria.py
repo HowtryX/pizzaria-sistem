@@ -109,8 +109,8 @@ if c_sel:
             # ... (código da seleção de pizza + bebidas que fizemos antes) ...
 
         # 3. CARRINHO (Aparece sempre que houver cliente selecionado)
-        st.write("---")
-        st.write("### 🛒 Carrinho")
+            st.write("---")
+            st.write("### 🛒 Carrinho")
         
         # Exibição do carrinho com Botão de Remover
         for i, item in enumerate(st.session_state.carrinho):
@@ -235,6 +235,7 @@ elif aba == "Promoções":
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.dataframe(pd.DataFrame(st.session_state.vendas))
+
 
 
 
