@@ -116,40 +116,40 @@ if aba == "PDV - Pedidos":
 
             # --- BLOCO DE FINALIZAÇÃO ---
            # --- BLOCO DE FINALIZAÇÃO CORRIGIDO ---
-if st.button("✅ FINALIZAR E IMPRIMIR"):
-    if not st.session_state.carrinho:
-        st.error("O carrinho está vazio!")
-    else:
+            if st.button("✅ FINALIZAR E IMPRIMIR"):
+                if not st.session_state.carrinho:
+                    st.error("O carrinho está vazio!")
+                else:
         # 1. Salvar dados
-        nova_venda = {
-            "Data": datetime.now().strftime("%d/%m %H:%M"), 
-            "Cliente": c_sel['nome'], 
-            "Itens": st.session_state.carrinho, 
-            "Total": total, 
-            "Obs": obs
-        }
-        st.session_state.vendas.append(nova_venda)
-        salvar_dados('vendas.json', st.session_state.vendas)
+                nova_venda = {
+                    "Data": datetime.now().strftime("%d/%m %H:%M"), 
+                    "Cliente": c_sel['nome'], 
+                    "Itens": st.session_state.carrinho, 
+                    "Total": total, 
+                    "Obs": obs
+                }
+                st.session_state.vendas.append(nova_venda)
+                salvar_dados('vendas.json', st.session_state.vendas)
         
         # 2. Gerar PDF (Certifique-se de que a função aceite uma lista)
-        caminho_pdf = gerar_comanda_pdf(c_sel['nome'], st.session_state.carrinho, bebs, total, obs)
+                caminho_pdf = gerar_comanda_pdf(c_sel['nome'], st.session_state.carrinho, bebs, total, obs)
         
         # 3. Exibir link de impressão
-        import base64
-        with open(caminho_pdf, "rb") as f:
-            bytes_data = f.read()
-            b64 = base64.b64encode(bytes_data).decode('utf-8')
+                import base64
+                with open(caminho_pdf, "rb") as f:
+                    bytes_data = f.read()
+                    b64 = base64.b64encode(bytes_data).decode('utf-8')
         
-        st.success("Pedido registrado!")
-        st.markdown(
-            f'<a href="data:application/pdf;base64,{b64}" target="_blank" style="padding: 10px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">🖨️ CLIQUE PARA IMPRIMIR</a>', 
-            unsafe_allow_html=True
+                st.success("Pedido registrado!")
+                st.markdown(
+                    f'<a href="data:application/pdf;base64,{b64}" target="_blank" style="padding: 10px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">🖨️ CLIQUE PARA IMPRIMIR</a>', 
+                    unsafe_allow_html=True
         )
         
         # 4. Botão para limpar e resetar a tela
-        if st.button("🔄 Iniciar Novo Pedido"):
-            st.session_state.carrinho = []
-            st.rerun() # O comando mágico que limpa tudo e recarrega
+            if st.button("🔄 Iniciar Novo Pedido"):
+                st.session_state.carrinho = []
+                st.rerun() # O comando mágico que limpa tudo e recarrega
             
 elif aba == "Cardápio":
     st.header("Gerenciar Cardápio")
@@ -211,6 +211,7 @@ elif aba == "Clientes":
 # --- TELA 5: RELATÓRIO ---
 elif aba == "Relatório":
     st.table(pd.DataFrame(st.session_state.vendas))
+
 
 
 
