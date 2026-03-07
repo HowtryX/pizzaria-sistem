@@ -374,33 +374,74 @@ elif aba == "Promoções":
     else:
         st.warning("Nenhuma promoção ativa.")
 # --- TELA: RELATÓRIO ---
+# --- TELA: RELATÓRIO (INTELIGÊNCIA DE VENDAS) ---
 elif aba == "Relatório":
-    st.header("📊 Vendas")
-    st.dataframe(pd.DataFrame(st.session_state.vendas))
+    st.header("📊 Inteligência de Vendas")
+    
+    if not st.session_state.vendas:
+        st.info("Ainda não existem vendas registradas para gerar relatórios.")
+    else:
+        # Converter vendas para DataFrame e tratar a data
+        df_vendas = pd.DataFrame(st.session_state.vendas)
+        df_vendas['data_dt'] = pd.to_datetime(df_vendas['data'], dayfirst=True)
+        
+        # --- FILTROS NO TOPO ---
+        c1, c2, c3 = st.columns([2, 1, 1])
+        hoje = datetime.now().date()
+        data_filtro = c1.date_input("Filtrar por data:", value=hoje)
+        
+        # Filtrar o DataFrame
+        df_filtrado = df_vendas[df_vendas['data_dt'].dt.date == data_filtro]
+        
+        # --- MÉTRICAS PRINCIPAIS ---
+        total_dia = df_filtrado['total'].sum()
+        qtd_pedidos = len(df_filtrado)
+        ticket_medio = total_dia / qtd_pedidos if qtd_pedidos > 0 else 0
+        
+        m1, m2, m3 = st.columns(3)
+        m1.metric("Faturamento do Dia", f"R$ {total_dia:.2f}")
+        m2.metric("Pedidos Realizados", qtd_pedidos)
+        m3.metric("Ticket Médio", f"R$ {ticket_medio:.2f}")
+        
+        st.write("---")
+        
+        tab_vendas, tab_sabores = st.tabs(["📑 Lista de Pedidos", "🏆 Sabores Populares"])
+        
+        with tab_vendas:
+            st.subheader(f"Pedidos de {data_filtro.strftime('%d/%m/%Y')}")
+            # Mostrar tabela formatada
+            st.dataframe(
+                df_filtrado[['data', 'cliente', 'total']], 
+                column_config={
+                    "total": st.column_config.NumberColumn("Valor Total", format="R$ %.2f"),
+                    "data": "Horário",
+                    "cliente": "Nome do Cliente"
+                },
+                use_container_width=True,
+                hide_index=True
+            )
+            
+            if st.button("🗑️ Limpar Todo o Histórico (CUIDADO)"):
+                if st.checkbox("Confirmar exclusão de todas as vendas?"):
+                    st.session_state.vendas = []
+                    salvar_dados('vendas.json', [])
+                    st.rerun()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        with tab_sabores:
+            # Lógica para contar sabores vendidos
+            sabores_lista = []
+            for _, row in df_filtrado.iterrows():
+                for item in row['itens']:
+                    sabores_lista.append(item.get('s1'))
+                    if item.get('s2') != "Nenhum":
+                        sabores_lista.append(item.get('s2'))
+            
+            if sabores_lista:
+                contagem = pd.Series(sabores_lista).value_counts().reset_index()
+                contagem.columns = ['Sabor', 'Quantidade']
+                
+                st.subheader("Ranking de Sabores Hoje")
+                st.bar_chart(contagem.set_index('Sabor'))
+                st.table(contagem)
+            else:
+                st.write("Sem dados de sabores para esta data.")
