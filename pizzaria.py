@@ -97,27 +97,40 @@ if aba == "PDV - Pedidos":
             st.subheader(f"💰 Total do Pedido: R$ {total:.2f}")
 
             # --- BLOCO CORRETO DE FINALIZAÇÃO ---
+        # --- BLOCO DO BOTÃO FINALIZAR (DENTRO DA ABA PDV) ---
         if st.button("✅ FINALIZAR E IMPRIMIR"):
-            # 1. Salvar dados
-            nova_venda = {"Data": datetime.now().strftime("%d/%m %H:%M"), "Cliente": c_sel['nome'], "Total": total, "Obs": obs}
-            st.session_state.vendas.append(nova_venda)
-            salvar_dados('vendas.json', st.session_state.vendas)
-            
-            # 2. Gerar o PDF
-            caminho_pdf = gerar_comanda_pdf(c_sel['nome'], s1, s2, borda_sel, bebs, total, obs)
-            
-            # 3. Processar e exibir DENTRO do bloco (importante para evitar NameError)
-            import base64
-            with open(caminho_pdf, "rb") as f:
-                bytes_data = f.read()
-                b64 = base64.b64encode(bytes_data).decode('utf-8')
-            
-            st.success("Pedido registrado!")
-            # Link para imprimir em nova aba (resolve o problema da página em branco no Ctrl+P)
-            st.markdown(
-                f'<a href="data:application/pdf;base64,{b64}" target="_blank" style="padding: 10px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">🖨️ CLIQUE PARA ABRIR E IMPRIMIR A COMANDA</a>', 
-                unsafe_allow_html=True
-            )
+            if not st.session_state.carrinho:
+                st.error("O carrinho está vazio! Adicione pelo menos uma pizza.")
+            else:
+                # 1. Salvar dados do pedido com a lista completa
+                nova_venda = {
+                    "Data": datetime.now().strftime("%d/%m %H:%M"), 
+                    "Cliente": c_sel['nome'], 
+                    "Itens": st.session_state.carrinho, 
+                    "Total": total, 
+                    "Obs": obs
+                }
+                st.session_state.vendas.append(nova_venda)
+                salvar_dados('vendas.json', st.session_state.vendas)
+                
+                # 2. Gerar o PDF (Passando a lista do carrinho)
+                caminho_pdf = gerar_comanda_pdf(c_sel['nome'], st.session_state.carrinho, bebs, total, obs)
+                
+                # 3. Processar Base64 para exibição
+                import base64
+                with open(caminho_pdf, "rb") as f:
+                    b64 = base64.b64encode(f.read()).decode('utf-8')
+                
+                st.success("Pedido registrado com sucesso!")
+                
+                # 4. Botão de Impressão (Abre em nova aba)
+                st.markdown(
+                    f'<a href="data:application/pdf;base64,{b64}" target="_blank" style="padding: 15px; background-color: #28a745; color: white; text-align: center; text-decoration: none; border-radius: 8px; display: block; font-weight: bold;">🖨️ ABRIR E IMPRIMIR COMANDA</a>', 
+                    unsafe_allow_html=True
+                )
+                
+                # Opcional: Limpar carrinho após registrar
+                # st.session_state.carrinho = []
             
 elif aba == "Cardápio":
     st.header("Gerenciar Cardápio")
@@ -179,6 +192,7 @@ elif aba == "Clientes":
 # --- TELA 5: RELATÓRIO ---
 elif aba == "Relatório":
     st.table(pd.DataFrame(st.session_state.vendas))
+
 
 
 
