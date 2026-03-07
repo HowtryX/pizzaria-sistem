@@ -169,82 +169,134 @@ if aba == "PDV - Pedidos":
 elif aba == "Cardápio":
     st.header("⚙️ Gestão de Cardápio")
     
-    # Criamos abas para cada categoria
-    tab1, tab2, tab3 = st.tabs(["🍕 Pizzas", "🧀 Bordas", "🥤 Bebidas"])
-    
-    # Função auxiliar para editar qualquer categoria
-    def editar_categoria(titulo, chave_session, arquivo):
-        st.subheader(f"Gerenciar {titulo}")
-        df = pd.DataFrame(list(st.session_state[chave_session].items()), columns=["Item", "Preço"])
-        edited_df = st.data_editor(df, num_rows="dynamic")
-        
-        if st.button(f"💾 Salvar {titulo}", key=f"btn_{chave_session}"):
-            st.session_state[chave_session] = dict(zip(edited_df["Item"], edited_df["Preço"]))
-            salvar_dados(arquivo, st.session_state[chave_session])
-            st.success(f"{titulo} atualizado com sucesso!")
-            st.rerun()
+    tab_p, tab_b, tab_be = st.tabs(["🍕 Pizzas", "🧀 Bordas", "🥤 Bebidas"])
 
-    with tab1:
-        editar_categoria("Pizzas", "pizzas", "pizzas.json")
-    with tab2:
-        editar_categoria("Bordas", "bordas", "bordas.json")
-    with tab3:
-        editar_categoria("Bebidas", "bebidas", "bebidas.json")
+    # --- ABA PIZZAS ---
+    with tab_p:
+        with st.form("add_pizza", clear_on_submit=True):
+            col1, col2 = st.columns(2)
+            novo_s = col1.text_input("Nome da Pizza")
+            preco_s = col2.number_input("Preço (R$)", min_value=0.0)
+            if st.form_submit_button("➕ Adicionar Pizza"):
+                if novo_s:
+                    st.session_state.pizzas[novo_s] = preco_s
+                    salvar_dados('pizzas.json', st.session_state.pizzas)
+                    st.success(f"{novo_s} adicionada!")
+                    st.rerun()
+
+        st.write("---")
+        df_p = pd.DataFrame(list(st.session_state.pizzas.items()), columns=["Sabor", "Preço"])
+        st.dataframe(df_p, use_container_width=True)
+
+    # --- ABA BORDAS ---
+    with tab_b:
+        with st.form("add_borda", clear_on_submit=True):
+            col1, col2 = st.columns(2)
+            nova_b = col1.text_input("Tipo de Borda")
+            preco_b = col2.number_input("Preço Adicional (R$)", min_value=0.0)
+            if st.form_submit_button("➕ Adicionar Borda"):
+                if nova_b:
+                    st.session_state.bordas[nova_b] = preco_b
+                    salvar_dados('bordas.json', st.session_state.bordas)
+                    st.rerun()
+        
+        df_b = pd.DataFrame(list(st.session_state.bordas.items()), columns=["Borda", "Preço"])
+        st.table(df_b)
+
+    # --- ABA BEBIDAS ---
+    with tab_be:
+        with st.form("add_bebida", clear_on_submit=True):
+            col1, col2 = st.columns(2)
+            nova_be = col1.text_input("Nome da Bebida")
+            preco_be = col2.number_input("Preço Unidade (R$)", min_value=0.0)
+            if st.form_submit_button("➕ Adicionar Bebida"):
+                if nova_be:
+                    st.session_state.bebidas[nova_be] = preco_be
+                    salvar_dados('bebidas.json', st.session_state.bebidas)
+                    st.rerun()
+        
+        df_be = pd.DataFrame(list(st.session_state.bebidas.items()), columns=["Bebida", "Preço"])
+        st.dataframe(df_be, use_container_width=True)
 
 # --- TELA: CLIENTES ---
 elif aba == "Clientes":
-    with st.form("cad"):
-        n = st.text_input("Nome"); t = st.text_input("Telefone"); e = st.text_area("Endereço")
-        if st.form_submit_button("Cadastrar"):
-            st.session_state.clientes.append({"nome": n, "telefone": t, "endereco": e})
-            salvar_dados('clientes.json', st.session_state.clientes)
+    st.header("👥 Cadastro de Clientes")
+    
+    # Formulário de Cadastro
+    with st.form("cad_cliente", clear_on_submit=True):
+        col1, col2 = st.columns(2)
+        n = col1.text_input("Nome Completo")
+        t = col2.text_input("Telefone / WhatsApp")
+        e = st.text_area("Endereço de Entrega")
+        
+        btn_cadastrar = st.form_submit_button("💾 Salvar Cliente")
+        
+        if btn_cadastrar:
+            if n and t: # Validação simples para não salvar vazio
+                novo_cliente = {"nome": n, "telefone": t, "endereco": e}
+                
+                # 1. Adiciona na memória (Session State)
+                st.session_state.clientes.append(novo_cliente)
+                
+                # 2. Grava no arquivo físico IMEDIATAMENTE
+                salvar_dados('clientes.json', st.session_state.clientes)
+                
+                st.success(f"✅ Cliente {n} cadastrado com sucesso!")
+                st.rerun()
+            else:
+                st.error("⚠️ Nome e Telefone são obrigatórios!")
+
+    # Exibição da Tabela de Clientes
+    st.write("---")
+    st.subheader("Lista de Clientes Cadastrados")
+    
+    if st.session_state.clientes:
+        df_clientes = pd.DataFrame(st.session_state.clientes)
+        # Reordenando as colunas para ficar mais bonito
+        st.dataframe(df_clientes[["nome", "telefone", "endereco"]], use_container_width=True)
+        
+        # Opção para limpar a lista (CUIDADO)
+        if st.button("🗑️ Apagar Todos os Clientes"):
+            st.session_state.clientes = []
+            salvar_dados('clientes.json', [])
             st.rerun()
-    st.table(pd.DataFrame(st.session_state.clientes))
+    else:
+        st.info("Nenhum cliente cadastrado ainda.")
 
 # --- TELA 3: PROMOÇÕES ---
-# --- TELA 3: PROMOÇÕES ---
-# --- TELA 3: PROMOÇÕES (SUBSTITUA TODO O BLOCO) ---
 elif aba == "Promoções":
-    st.header("🎁 Criar Promoção")
+    st.header("🎁 Gestão de Promoções")
     
-    with st.expander("➕ Nova Promoção"):
-        nome = st.text_input("Nome da Promoção")
-        qtd = st.number_input("Qtd Pizzas", min_value=1, value=1)
-        s1 = st.selectbox("Sabor 1", list(st.session_state.pizzas.keys()))
-        s2 = st.selectbox("Sabor 2", ["Nenhum"] + list(st.session_state.pizzas.keys()))
-        borda = st.selectbox("Borda:", list(st.session_state.bordas.keys()))
-        preco = st.number_input("Preço Promocional", min_value=0.0)
-        ent = st.checkbox("Entrega Grátis?")
+    with st.form("cad_promo", clear_on_submit=True):
+        nome_p = st.text_input("Nome do Combo (Ex: Combo Família)")
+        col1, col2 = st.columns(2)
+        qtd_p = col1.number_input("Qtd de Pizzas no Combo", min_value=1, value=2)
+        preco_p = col2.number_input("Preço Total do Combo (R$)", min_value=0.0)
         
-        if st.button("Salvar Promoção"):
+        c1, c2 = st.columns(2)
+        s1_p = c1.selectbox("Sabor Padrão 1", list(st.session_state.pizzas.keys()))
+        ent_p = c2.checkbox("Entrega Grátis neste Combo?")
+        
+        if st.form_submit_button("💾 Salvar Promoção"):
             nova_promo = {
-                "nome": nome or "Promoção Sem Nome",
-                "qtd_pizzas": qtd,
-                "itens": {"s1": s1, "s2": s2, "borda": borda},
-                "preco_promocional": preco,
-                "entrega_inclusa": ent
+                "nome": nome_p or "Combo Especial",
+                "qtd_pizzas": qtd_p,
+                "itens": {"s1": s1_p, "s2": "Nenhum", "borda": "Sem Borda"},
+                "preco_promocional": preco_p,
+                "entrega_inclusa": ent_p
             }
             st.session_state.promocoes.append(nova_promo)
             salvar_dados('promocoes.json', st.session_state.promocoes)
-            st.success("Promoção salva!")
+            st.success("Promoção Gravada!")
             st.rerun()
-    
+
+    st.write("---")
     st.subheader("Promoções Ativas")
-    # Apenas um loop de exibição para evitar duplicidade
     for i, p in enumerate(st.session_state.promocoes):
-        # Proteção com .get() para evitar KeyError
-        nome = p.get('nome', 'Promoção Sem Nome')
-        qtd = p.get('qtd_pizzas', 1)
-        itens = p.get('itens', {})
-        preco = p.get('preco_promocional', 0.0)
-        
         with st.container(border=True):
-            col_info, col_del = st.columns([5, 1])
-            col_info.markdown(f"### {nome}")
-            col_info.write(f"🍕 Qtd: {qtd} | Sabores: {itens.get('s1')} + {itens.get('s2')} | Borda: {itens.get('borda')}")
-            col_info.subheader(f"💰 Preço: R$ {preco:.2f}")
-            
-            if col_del.button("🗑️", key=f"del_promo_{i}"):
+            c_info, c_del = st.columns([4, 1])
+            c_info.write(f"**{p.get('nome')}** - {p.get('qtd_pizzas')} Pizzas por R$ {p.get('preco_promocional'):.2f}")
+            if c_del.button("🗑️", key=f"del_promo_{i}"):
                 st.session_state.promocoes.pop(i)
                 salvar_dados('promocoes.json', st.session_state.promocoes)
                 st.rerun()
@@ -253,6 +305,7 @@ elif aba == "Promoções":
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.dataframe(pd.DataFrame(st.session_state.vendas))
+
 
 
 
