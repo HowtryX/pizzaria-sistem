@@ -26,22 +26,22 @@ def gerar_comanda_pdf(c_nome, total, obs):
 st.set_page_config(page_title="Pizzaria Pro", layout="wide")
 
 def carregar_dados(arquivo, padrao):
-    if os.path.exists(arquivo):
-        try:
-            with open(arquivo, 'r') as f: return json.load(f)
-        except: return padrao
-    return padrao
+    if os.path.exists(arquivo):
+        try:
+            with open(arquivo, 'r') as f: return json.load(f)
+        except: return padrao
+    return padrao
 
 def salvar_dados(arquivo, dados):
-    with open(arquivo, 'w') as f: json.dump(dados, f)
+    with open(arquivo, 'w') as f: json.dump(dados, f, indent=4)
 
-# Inicialização
+# Inicialização com carga de arquivos
 if 'clientes' not in st.session_state: st.session_state.clientes = carregar_dados('clientes.json', [])
 if 'pizzas' not in st.session_state: st.session_state.pizzas = carregar_dados('pizzas.json', {"Mussarela": 40.0})
 if 'bebidas' not in st.session_state: st.session_state.bebidas = carregar_dados('bebidas.json', {"Coca-Cola": 10.0})
 if 'bordas' not in st.session_state: st.session_state.bordas = carregar_dados('bordas.json', {"Sem Borda": 0.0, "Catupiry": 10.0})
 if 'promocoes' not in st.session_state: st.session_state.promocoes = carregar_dados('promocoes.json', [])
-if 'vendas' not in st.session_state: st.session_state.vendas = []
+if 'vendas' not in st.session_state: st.session_state.vendas = carregar_dados('vendas.json', [])
 
 # --- NAVEGAÇÃO ---
 st.sidebar.title("🍕 Menu do App")
@@ -49,46 +49,44 @@ aba = st.sidebar.radio("Navegação:", ["PDV - Pedidos", "Cardápio", "Promoçõ
 
 # --- TELA 1: PDV ---
 if aba == "PDV - Pedidos":
-    st.header("🛒 Terminal de Vendas")
-    nome_busca = st.text_input("🔍 Buscar cliente pelo NOME:")
-    resultados = [c for c in st.session_state.clientes if nome_busca.lower() in c['nome'].lower()]
-    
-    if nome_busca and resultados:
-        c_sel = st.selectbox("Selecione o cliente:", resultados, format_func=lambda x: x['nome'])
-        st.info(f"📍 Endereço: {c_sel.get('endereco', 'Não cadastrado')}")
-        
-        col1, col2 = st.columns(2)
-        with col1:
-            s1 = st.selectbox("Sabor 1", list(st.session_state.pizzas.keys()))
-            s2 = st.selectbox("Sabor 2", ["Nenhum"] + list(st.session_state.pizzas.keys()))
-            borda_sel = st.selectbox("Escolha a Borda:", list(st.session_state.bordas.keys()))
-            taxa_entrega = st.number_input("Taxa de Entrega (R$):", value=5.0)
-        with col2:
-            bebs = st.multiselect("Bebidas:", list(st.session_state.bebidas.keys()))
-            qtde_bebs = {b: st.number_input(f"Qtd {b}", min_value=1, value=1, key=f"k_{b}") for b in bebs}
-            obs = st.text_area("📝 Observações:")
-
-        preco_base = max(st.session_state.pizzas[s1], st.session_state.pizzas[s2] if s2 != "Nenhum" else 0)
-        v_borda = st.session_state.bordas[borda_sel]
-        preco_bebs = sum([st.session_state.bebidas[b] * qtde_bebs[b] for b in bebs])
-        desc = sum([p['desconto'] for p in st.session_state.promocoes if p['produto'] in [s1, s2] + bebs])
-        
-        total = (preco_base + v_borda + preco_bebs + taxa_entrega) - desc
-        st.subheader(f"💰 Total: R$ {total:.2f}")
-
-        if st.button("✅ FINALIZAR E IMPRIMIR"):
-        # 1. Salvar na sessão e no arquivo
-        st.session_state.vendas.append({"Data": datetime.now().strftime("%d/%m %H:%M"), "Cliente": c_sel['nome'], "Total": total, "Obs": obs})
+    st.header("🛒 Terminal de Vendas")
+    nome_busca = st.text_input("🔍 Buscar cliente pelo NOME:")
+    resultados = [c for c in st.session_state.clientes if nome_busca.lower() in c['nome'].lower()]
+    
+    if nome_busca and resultados:
+        c_sel = st.selectbox("Selecione o cliente:", resultados, format_func=lambda x: x['nome'])
+        st.info(f"📍 Endereço: {c_sel.get('endereco', 'Não cadastrado')}")
         
-        # 2. Gerar o PDF
-        caminho_pdf = gerar_comanda_pdf(c_sel['nome'], total, obs)
-        
-        # 3. Criar botão de download
-        with open(caminho_pdf, "rb") as f:
-            st.download_button("🖨️ BAIXAR E IMPRIMIR COMANDA", f, "comanda.pdf", "application/pdf")
-        
-        st.success("Pedido registrado! Clique no botão acima para imprimir.")
+        col1, col2 = st.columns(2)
+        with col1:
+            s1 = st.selectbox("Sabor 1", list(st.session_state.pizzas.keys()))
+            s2 = st.selectbox("Sabor 2", ["Nenhum"] + list(st.session_state.pizzas.keys()))
+            borda_sel = st.selectbox("Escolha a Borda:", list(st.session_state.bordas.keys()))
+            taxa_entrega = st.number_input("Taxa de Entrega (R$):", value=5.0)
+        with col2:
+            bebs = st.multiselect("Bebidas:", list(st.session_state.bebidas.keys()))
+            qtde_bebs = {b: st.number_input(f"Qtd {b}", min_value=1, value=1, key=f"k_{b}") for b in bebs}
+            obs = st.text_area("📝 Observações:")
 
+        preco_base = max(st.session_state.pizzas.get(s1, 0), st.session_state.pizzas.get(s2, 0) if s2 != "Nenhum" else 0)
+        v_borda = st.session_state.bordas.get(borda_sel, 0)
+        preco_bebs = sum([st.session_state.bebidas.get(b, 0) * qtde_bebs[b] for b in bebs])
+        desc = sum([p['desconto'] for p in st.session_state.promocoes if p['produto'] in [s1, s2] + bebs])
+        
+        total = (preco_base + v_borda + preco_bebs + taxa_entrega) - desc
+        st.subheader(f"💰 Total: R$ {total:.2f}")
+
+        if st.button("✅ FINALIZAR E IMPRIMIR"):
+            nova_venda = {"Data": datetime.now().strftime("%d/%m %H:%M"), "Cliente": c_sel['nome'], "Total": total, "Obs": obs}
+            st.session_state.vendas.append(nova_venda)
+            salvar_dados('vendas.json', st.session_state.vendas)
+            
+            caminho_pdf = gerar_comanda_pdf(c_sel['nome'], total, obs)
+            with open(caminho_pdf, "rb") as f:
+                st.download_button("🖨️ BAIXAR E IMPRIMIR COMANDA", f, "comanda.pdf", "application/pdf")
+            st.success("Pedido registrado!")
+
+# --- (O resto do seu código permanece o mesmo para as outras abas) ---
 # --- TELA 2: CARDÁPIO ---
 elif aba == "Cardápio":
     st.header("📋 Gerenciar Cardápio")
@@ -152,4 +150,5 @@ elif aba == "Clientes":
 elif aba == "Relatório":
     st.table(pd.DataFrame(st.session_state.vendas))
  implementa nesse codigo
+
 
