@@ -140,7 +140,48 @@ elif aba == "Clientes":
             st.rerun()
     st.table(pd.DataFrame(st.session_state.clientes))
 
+# --- TELA 3: PROMOÇÕES ---
+elif aba == "Promoções":
+    st.header("🎁 Criar Promoção Personalizada")
+    
+    # 1. Painel de criação
+    with st.expander("➕ Nova Promoção de Combo/Pizza"):
+        nome_promo = st.text_input("Nome da Promoção (ex: Combo Casal)")
+        # Seleção de itens como no PDV
+        s1 = st.selectbox("Sabor 1", list(st.session_state.pizzas.keys()), key="promo_s1")
+        s2 = st.selectbox("Sabor 2", ["Nenhum"] + list(st.session_state.pizzas.keys()), key="promo_s2")
+        borda = st.selectbox("Borda:", list(st.session_state.bordas.keys()), key="promo_borda")
+        bebs = st.multiselect("Bebidas:", list(st.session_state.bebidas.keys()), key="promo_bebs")
+        preco_final = st.number_input("Preço Promocional (R$):", min_value=0.0)
+        
+        if st.button("Salvar Promoção"):
+            nova_promo = {
+                "nome": nome_promo,
+                "itens": {"s1": s1, "s2": s2, "borda": borda, "bebidas": bebs},
+                "preco_promocional": preco_final
+            }
+            st.session_state.promocoes.append(nova_promo)
+            salvar_dados('promocoes.json', st.session_state.promocoes)
+            st.success("Promoção criada com sucesso!")
+            st.rerun()
+
+    # 2. Exibição das promoções existentes
+    st.subheader("Promoções Ativas")
+    for i, p in enumerate(st.session_state.promocoes):
+        with st.container(border=True):
+            col_info, col_del = st.columns([5, 1])
+            col_info.markdown(f"### {p['nome']}")
+            col_info.write(f"🍕 {p['itens']['s1']} + {p['itens']['s2']} | Borda: {p['itens']['borda']}")
+            col_info.write(f"🥤 Bebidas: {', '.join(p['itens']['bebidas']) if p['itens']['bebidas'] else 'Nenhuma'}")
+            col_info.subheader(f"💰 Preço: R$ {p['preco_promocional']:.2f}")
+            
+            if col_del.button("🗑️", key=f"del_p_{i}"):
+                st.session_state.promocoes.pop(i)
+                salvar_dados('promocoes.json', st.session_state.promocoes)
+                st.rerun()
+
 # --- TELA: RELATÓRIO ---
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.table(pd.DataFrame(st.session_state.vendas))
+
