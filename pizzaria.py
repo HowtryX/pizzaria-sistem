@@ -143,11 +143,12 @@ elif aba == "Clientes":
     with st.form("cad"):
         n = st.text_input("Nome"); t = st.text_input("Telefone"); e = st.text_area("Endereço")
         if st.form_submit_button("Cadastrar"): st.session_state.clientes.append({"nome": n, "telefone": t, "endereco": e}); salvar_dados('clientes.json', st.session_state.clientes); st.rerun()
-            st.table(pd.DataFrame(st.session_state.clientes))
+    st.table(pd.DataFrame(st.session_state.clientes))
 
 # --- TELA 5: RELATÓRIO ---
 elif aba == "Relatório":
 st.table(pd.DataFrame(st.session_state.vendas))
+
 
 
 
