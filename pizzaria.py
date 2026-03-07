@@ -5,6 +5,7 @@ import os
 from datetime import datetime
 from fpdf import FPDF
 import streamlit.components.v1 as components
+import base64
 
 # --- FUNÇÃO PARA GERAR COMANDA ---
 def gerar_comanda_pdf(c_nome, s1, s2, borda, bebs_dict, total, obs):
@@ -94,8 +95,7 @@ if aba == "PDV - Pedidos":
             caminho_pdf = gerar_comanda_pdf(c_sel['nome'], s1, s2, borda_sel, bebs, total, obs)
             
                 # 3. Exibir o PDF para o usuário e oferecer a impressão
-                import base64
-                with open(caminho_pdf, "rb") as f:
+            with open(caminho_pdf, "rb") as f:
                     bytes_pdf = f.read()
                     b64_pdf = base64.b64encode(bytes_pdf).decode('utf-8')
             
@@ -167,6 +167,7 @@ elif aba == "Clientes":
 # --- TELA 5: RELATÓRIO ---
 elif aba == "Relatório":
     st.table(pd.DataFrame(st.session_state.vendas))
+
 
 
 
