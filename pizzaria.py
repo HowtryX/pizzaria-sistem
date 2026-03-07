@@ -86,21 +86,25 @@ if aba == "PDV - Pedidos":
         total = (preco_base + v_borda + preco_bebs + taxa_entrega) - desc
         st.subheader(f"💰 Total: R$ {total:.2f}")
         if st.button("✅ FINALIZAR E IMPRIMIR"):
-            # 1. Salvar dados
-            nova_venda = {"Data": datetime.now().strftime("%d/%m %H:%M"), "Cliente": c_sel['nome'], "Total": total, "Obs": obs}
-            st.session_state.vendas.append(nova_venda)
-            salvar_dados('vendas.json', st.session_state.vendas)
-            
-                # 2. Gerar o PDF
-            caminho_pdf = gerar_comanda_pdf(c_sel['nome'], s1, s2, borda_sel, bebs, total, obs)
-            
-                # 3. Exibir o PDF para o usuário e oferecer a impressão
-            with open(caminho_pdf, "rb") as f:
-                        bytes_data = f.read()
-                        b64 = base64.b64encode(bytes_data).decode('utf-8')
-                        st.success("Pedido registrado!")
+        # 1. Salvar dados
+        nova_venda = {"Data": datetime.now().strftime("%d/%m %H:%M"), "Cliente": c_sel['nome'], "Total": total, "Obs": obs}
+        st.session_state.vendas.append(nova_venda)
+        salvar_dados('vendas.json', st.session_state.vendas)
+        
+        # 2. Gerar o PDF
+        caminho_pdf = gerar_comanda_pdf(c_sel['nome'], s1, s2, borda_sel, bebs, total, obs)
+        
+        # 3. Processar e exibir DENTRO do mesmo bloco identado
+        import base64
+        with open(caminho_pdf, "rb") as f:
+            bytes_data = f.read()
+            b64 = base64.b64encode(bytes_data).decode('utf-8')
+        
+        st.success("Pedido registrado!")
+        
+        # O markdown agora está no mesmo nível que o 'with open', portanto 'b64' existe aqui dentro
         st.markdown(
-            f'<a href="data:application/pdf;base64,{b64} " target="_blank" style="padding: 10px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">🖨️ CLIQUE PARA ABRIR E IMPRIMIR A COMANDA</a>', 
+            f'<a href="data:application/pdf;base64,{b64}" target="_blank" style="padding: 10px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">🖨️ CLIQUE PARA ABRIR E IMPRIMIR A COMANDA</a>', 
             unsafe_allow_html=True
         )
 elif aba == "Cardápio":
@@ -163,6 +167,7 @@ elif aba == "Clientes":
 # --- TELA 5: RELATÓRIO ---
 elif aba == "Relatório":
     st.table(pd.DataFrame(st.session_state.vendas))
+
 
 
 
