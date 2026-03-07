@@ -85,19 +85,19 @@ if aba == "PDV - Pedidos":
         # 2. Abas de Seleção
         tab_promo, tab_manual = st.tabs(["🎁 Combos", "🍕 Seleção Manual"])
         
-           with tab_promo:
-               if st.session_state.promocoes:
-                p_sel = st.selectbox("Escolha o combo:", st.session_state.promocoes, format_func=lambda x: x.get('nome', 'Sem Nome'))
-                if st.button("Aplicar Promoção"):
-                    for _ in range(p_sel.get('qtd_pizzas', 1)):
-                        st.session_state.carrinho.append({
-                            "s1": p_sel['itens'].get('s1', 'Mussarela'), 
-                            "s2": p_sel['itens'].get('s2', 'Nenhum'), 
-                            "borda": p_sel['itens'].get('borda', 'Sem Borda'), 
-                            "preco": p_sel.get('preco_promocional', 0.0) / p_sel.get('qtd_pizzas', 1),
-                            "entrega_gratis": p_sel.get('entrega_inclusa', False)
+               with tab_promo:
+                   if st.session_state.promocoes:
+                    p_sel = st.selectbox("Escolha o combo:", st.session_state.promocoes, format_func=lambda x: x.get('nome', 'Sem Nome'))
+                    if st.button("Aplicar Promoção"):
+                        for _ in range(p_sel.get('qtd_pizzas', 1)):
+                            st.session_state.carrinho.append({
+                                "s1": p_sel['itens'].get('s1', 'Mussarela'), 
+                                "s2": p_sel['itens'].get('s2', 'Nenhum'), 
+                                "borda": p_sel['itens'].get('borda', 'Sem Borda'), 
+                                "preco": p_sel.get('preco_promocional', 0.0) / p_sel.get('qtd_pizzas', 1),
+                                "entrega_gratis": p_sel.get('entrega_inclusa', False)
                         })
-                    st.rerun()
+                    s    t.rerun()
             # ... (código do expander de promoções que fizemos antes) ...
                 
             with tab_manual:
@@ -235,6 +235,7 @@ elif aba == "Promoções":
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.dataframe(pd.DataFrame(st.session_state.vendas))
+
 
 
 
