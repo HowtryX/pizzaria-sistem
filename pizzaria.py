@@ -85,10 +85,27 @@ if aba == "PDV - Pedidos":
         # 2. Abas de Seleção
         tab_promo, tab_manual = st.tabs(["🎁 Combos", "🍕 Seleção Manual"])
         
-        with tab_promo:
+            with tab_promo:
+               if st.session_state.promocoes:
+                p_sel = st.selectbox("Escolha o combo:", st.session_state.promocoes, format_func=lambda x: x.get('nome', 'Sem Nome'))
+                if st.button("Aplicar Promoção"):
+                    for _ in range(p_sel.get('qtd_pizzas', 1)):
+                        st.session_state.carrinho.append({
+                            "s1": p_sel['itens'].get('s1', 'Mussarela'), 
+                            "s2": p_sel['itens'].get('s2', 'Nenhum'), 
+                            "borda": p_sel['itens'].get('borda', 'Sem Borda'), 
+                            "preco": p_sel.get('preco_promocional', 0.0) / p_sel.get('qtd_pizzas', 1),
+                            "entrega_gratis": p_sel.get('entrega_inclusa', False)
+                        })
+                    st.rerun()
             # ... (código do expander de promoções que fizemos antes) ...
-            
-        with tab_manual:
+                
+            with tab_manual:
+                c1, c2 = st.columns(2)
+                s1 = c1.selectbox("Sabor 1", list(st.session_state.pizzas.keys()))
+                s2 = c2.selectbox("Sabor 2", ["Nenhum"] + list(st.session_state.pizzas.keys()))
+                borda = c1.selectbox("Borda:", list(st.session_state.bordas.keys()))
+                bebs_selecionadas = c2.multiselect("Bebidas:", list(st.session_state.bebidas.keys()))
             # ... (código da seleção de pizza + bebidas que fizemos antes) ...
 
         # 3. CARRINHO (Aparece sempre que houver cliente selecionado)
@@ -218,6 +235,7 @@ elif aba == "Promoções":
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.dataframe(pd.DataFrame(st.session_state.vendas))
+
 
 
 
