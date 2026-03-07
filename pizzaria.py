@@ -8,20 +8,24 @@ import streamlit.components.v1 as components
 import base64
 
 # --- FUNÇÃO PARA GERAR COMANDA ---
-def gerar_comanda_pdf(c_nome, s1, s2, borda, bebs_dict, total, obs):
+def gerar_comanda_pdf(c_nome, lista_itens, bebs_dict, total, obs):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Arial", 'B', 16)
     pdf.cell(200, 10, txt="COMANDA DE PEDIDO", ln=True, align='C')
     pdf.set_font("Arial", size=12)
     pdf.ln(5)
-    pdf.cell(200, 10, txt=f"Data: {datetime.now().strftime('%d/%m/%Y %H:%M')}", ln=True)
     pdf.cell(200, 10, txt=f"Cliente: {c_nome}", ln=True)
     pdf.ln(5)
-    pdf.cell(200, 10, txt=f"Sabor 1: {s1}", ln=True)
-    if s2 != "Nenhum":
-        pdf.cell(200, 10, txt=f"Sabor 2: {s2}", ln=True)
-    pdf.cell(200, 10, txt=f"Borda: {borda}", ln=True)
+    
+    # Loop para percorrer todas as pizzas do carrinho
+    for i, item in enumerate(lista_itens):
+        s1 = item['s1']
+        s2 = item['s2']
+        borda = item['borda']
+        pdf.cell(200, 10, txt=f"Pizza {i+1}: {s1} + {s2} | Borda: {borda}", ln=True)
+        
+    pdf.ln(5)
     pdf.cell(200, 10, txt=f"Bebidas: {', '.join(bebs_dict)}", ln=True)
     pdf.ln(5)
     pdf.cell(200, 10, txt=f"Obs: {obs}", ln=True)
@@ -192,6 +196,7 @@ elif aba == "Clientes":
 # --- TELA 5: RELATÓRIO ---
 elif aba == "Relatório":
     st.table(pd.DataFrame(st.session_state.vendas))
+
 
 
 
