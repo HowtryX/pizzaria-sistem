@@ -40,6 +40,9 @@ def gerar_comanda_pdf(c_nome, lista_itens, bebs_dict, total, obs):
         pdf.cell(62, 5, txt=f"{i+1}. {item['s1']} + {item['s2']}", ln=True)
         pdf.set_font("Arial", size=9)
         pdf.cell(62, 5, txt=f"Borda: {item['borda']} | R$ {item['preco']:.2f}", ln=True)
+        if item.get('bebidas'):
+        pdf.set_font("Arial", size=9)
+        pdf.cell(62, 5, txt=f"Bebidas: {', '.join(item['bebidas'])}", ln=True)
     
     pdf.ln(2)
     if bebs_dict:
@@ -108,12 +111,24 @@ if aba == "PDV - Pedidos":
             s2 = c2.selectbox("Sabor 2", ["Nenhum"] + list(st.session_state.pizzas.keys()))
             borda = c1.selectbox("Borda:", list(st.session_state.bordas.keys()))
             
-            # Cálculo do preço manual: média dos sabores + borda
-            preco_manual = (st.session_state.pizzas[s1] + (st.session_state.pizzas.get(s2, 0) if s2 != "Nenhum" else 0)) / 2
-            preco_manual += st.session_state.bordas[borda]
+            # --- NOVO: Seletor de Bebidas ---
+            bebs_selecionadas = c2.multiselect("Bebidas:", list(st.session_state.bebidas.keys()))
             
-            if st.button("Adicionar Pizza ao Carrinho"):
-                st.session_state.carrinho.append({"s1": s1, "s2": s2, "borda": borda, "preco": preco_manual})
+            # Cálculo do preço (Pizzas + Borda + Bebidas)
+            preco_pizza = (st.session_state.pizzas[s1] + (st.session_state.pizzas.get(s2, 0) if s2 != "Nenhum" else 0)) / 2
+            preco_borda = st.session_state.bordas[borda]
+            preco_bebs = sum([st.session_state.bebidas[b] for b in bebs_selecionadas])
+            
+            total_item = preco_pizza + preco_borda + preco_bebs
+            
+            if st.button("Adicionar Pizza/Bebidas ao Carrinho"):
+                st.session_state.carrinho.append({
+                    "s1": s1, 
+                    "s2": s2, 
+                    "borda": borda, 
+                    "bebidas": bebs_selecionadas, # Salva a lista de bebidas
+                    "preco": total_item
+                })
                 st.rerun()
 
         # 3. Carrinho
@@ -149,16 +164,31 @@ if aba == "PDV - Pedidos":
                     st.rerun()
 
 # --- TELA: CARDÁPIO ---
+# --- TELA: CARDÁPIO (GESTÃO COMPLETA) ---
 elif aba == "Cardápio":
-    st.header("⚙️ Gestão de Preços")
-    df_p = pd.DataFrame(list(st.session_state.pizzas.items()), columns=["Sabor", "Preço"])
-    edited_p = st.data_editor(df_p, num_rows="dynamic")
+    st.header("⚙️ Gestão de Cardápio")
     
-    if st.button("💾 Salvar Preços"):
-        st.session_state.pizzas = dict(zip(edited_p["Sabor"], edited_p["Preço"]))
-        salvar_dados('pizzas.json', st.session_state.pizzas)
-        st.success("Alterações salvas!")
-        st.rerun()
+    # Criamos abas para cada categoria
+    tab1, tab2, tab3 = st.tabs(["🍕 Pizzas", "🧀 Bordas", "🥤 Bebidas"])
+    
+    # Função auxiliar para editar qualquer categoria
+    def editar_categoria(titulo, chave_session, arquivo):
+        st.subheader(f"Gerenciar {titulo}")
+        df = pd.DataFrame(list(st.session_state[chave_session].items()), columns=["Item", "Preço"])
+        edited_df = st.data_editor(df, num_rows="dynamic")
+        
+        if st.button(f"💾 Salvar {titulo}", key=f"btn_{chave_session}"):
+            st.session_state[chave_session] = dict(zip(edited_df["Item"], edited_df["Preço"]))
+            salvar_dados(arquivo, st.session_state[chave_session])
+            st.success(f"{titulo} atualizado com sucesso!")
+            st.rerun()
+
+    with tab1:
+        editar_categoria("Pizzas", "pizzas", "pizzas.json")
+    with tab2:
+        editar_categoria("Bordas", "bordas", "bordas.json")
+    with tab3:
+        editar_categoria("Bebidas", "bebidas", "bebidas.json")
 
 # --- TELA: CLIENTES ---
 elif aba == "Clientes":
@@ -222,6 +252,7 @@ elif aba == "Promoções":
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.dataframe(pd.DataFrame(st.session_state.vendas))
+
 
 
 
