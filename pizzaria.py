@@ -46,6 +46,7 @@ def salvar_dados(arquivo, dados):
     with open(arquivo, 'w') as f: json.dump(dados, f, indent=4)
 
 # Inicialização com carga de arquivos
+if 'carrinho' not in st.session_state: st.session_state.carrinho = []
 if 'clientes' not in st.session_state: st.session_state.clientes = carregar_dados('clientes.json', [])
 if 'pizzas' not in st.session_state: st.session_state.pizzas = carregar_dados('pizzas.json', {"Mussarela": 40.0})
 if 'bebidas' not in st.session_state: st.session_state.bebidas = carregar_dados('bebidas.json', {"Coca-Cola": 10.0})
@@ -65,34 +66,46 @@ if aba == "PDV - Pedidos":
     
     if nome_busca and resultados:
         c_sel = st.selectbox("Selecione o cliente:", resultados, format_func=lambda x: x['nome'])
-        st.info(f"📍 Endereço: {c_sel.get('endereco', 'Não cadastrado')}")
         
+        # --- SELEÇÃO DE PIZZA ---
         col1, col2 = st.columns(2)
         with col1:
             s1 = st.selectbox("Sabor 1", list(st.session_state.pizzas.keys()))
             s2 = st.selectbox("Sabor 2", ["Nenhum"] + list(st.session_state.pizzas.keys()))
             borda_sel = st.selectbox("Escolha a Borda:", list(st.session_state.bordas.keys()))
-            taxa_entrega = st.number_input("Taxa de Entrega (R$):", value=8.0)
+        
         with col2:
             bebs = st.multiselect("Bebidas:", list(st.session_state.bebidas.keys()))
-            qtde_bebs = {b: st.number_input(f"Qtd {b}", min_value=1, value=1, key=f"k_{b}") for b in bebs}
-            obs = st.text_area("📝 Observações:")
+            obs = st.text_area("📝 Observações do Pedido:")
+        
+        # --- LÓGICA DO CARRINHO ---
+        if st.button("➕ Adicionar Pizza ao Carrinho"):
+            preco_p = max(st.session_state.pizzas.get(s1, 0), st.session_state.pizzas.get(s2, 0) if s2 != "Nenhum" else 0)
+            st.session_state.carrinho.append({"s1": s1, "s2": s2, "borda": borda_sel, "preco": preco_p})
+            st.success("Pizza adicionada!")
 
-        preco_base = max(st.session_state.pizzas.get(s1, 0), st.session_state.pizzas.get(s2, 0) if s2 != "Nenhum" else 0)
-        v_borda = st.session_state.bordas.get(borda_sel, 0)
-        preco_bebs = sum([st.session_state.bebidas.get(b, 0) * qtde_bebs[b] for b in bebs])
-        desc = sum([p['desconto'] for p in st.session_state.promocoes if p['produto'] in [s1, s2] + bebs])
-        
-        total = (preco_base + v_borda + preco_bebs + taxa_entrega) - desc
-        st.subheader(f"💰 Total: R$ {total:.2f}")
-        if st.button("✅ FINALIZAR E IMPRIMIR"):
-        # 1. Salvar dados
-            nova_venda = {"Data": datetime.now().strftime("%d/%m %H:%M"), "Cliente": c_sel['nome'], "Total": total, "Obs": obs}
-            st.session_state.vendas.append(nova_venda)
-            salvar_dados('vendas.json', st.session_state.vendas)
-        
-        # 2. Gerar o PDF
-            caminho_pdf = gerar_comanda_pdf(c_sel['nome'], s1, s2, borda_sel, bebs, total, obs)
+        # Exibir resumo do carrinho
+        if st.session_state.carrinho:
+            st.write("---")
+            st.write("### Carrinho")
+            for i, item in enumerate(st.session_state.carrinho):
+                st.write(f"{i+1}. {item['s1']} + {item['s2']} ({item['borda']}) - R$ {item['preco']:.2f}")
+            
+            total_pizzas = sum(item['preco'] for item in st.session_state.carrinho)
+            taxa_entrega = st.number_input("Taxa de Entrega (R$):", value=8.0)
+            total = total_pizzas + taxa_entrega
+            st.subheader(f"💰 Total do Pedido: R$ {total:.2f}")
+
+            if st.button("✅ FINALIZAR E IMPRIMIR"):
+                # Salvar venda com lista de itens
+                nova_venda = {"Data": datetime.now().strftime("%d/%m %H:%M"), "Cliente": c_sel['nome'], "Itens": st.session_state.carrinho, "Total": total}
+                st.session_state.vendas.append(nova_venda)
+                salvar_dados('vendas.json', st.session_state.vendas)
+                
+                # Gerar PDF (Você precisará atualizar sua função gerar_comanda_pdf para iterar sobre a lista de itens)
+                st.success("Pedido registrado!")
+                st.session_state.carrinho = [] # Limpa o carrinho
+                st.rerun()
         
         # 3. Processar e exibir DENTRO do mesmo bloco identado
             import base64
@@ -166,6 +179,7 @@ elif aba == "Clientes":
 # --- TELA 5: RELATÓRIO ---
 elif aba == "Relatório":
     st.table(pd.DataFrame(st.session_state.vendas))
+
 
 
 
