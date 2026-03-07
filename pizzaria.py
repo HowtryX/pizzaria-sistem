@@ -162,3 +162,4 @@ st.table(pd.DataFrame(st.session_state.vendas))
 
 
 
+
