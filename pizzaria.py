@@ -76,9 +76,18 @@ if aba == "PDV - Pedidos":
         total = (preco_base + v_borda + preco_bebs + taxa_entrega) - desc
         st.subheader(f"💰 Total: R$ {total:.2f}")
 
-        if st.button("✅ FINALIZAR"):
-            st.session_state.vendas.append({"Data": datetime.now().strftime("%d/%m %H:%M"), "Cliente": c_sel['nome'], "Total": total, "Obs": obs})
-            st.success("Pedido registrado!")
+        if st.button("✅ FINALIZAR E IMPRIMIR"):
+        # 1. Salvar na sessão e no arquivo
+        st.session_state.vendas.append({"Data": datetime.now().strftime("%d/%m %H:%M"), "Cliente": c_sel['nome'], "Total": total, "Obs": obs})
+        
+        # 2. Gerar o PDF
+        caminho_pdf = gerar_comanda_pdf(c_sel['nome'], total, obs)
+        
+        # 3. Criar botão de download
+        with open(caminho_pdf, "rb") as f:
+            st.download_button("🖨️ BAIXAR E IMPRIMIR COMANDA", f, "comanda.pdf", "application/pdf")
+        
+        st.success("Pedido registrado! Clique no botão acima para imprimir.")
 
 # --- TELA 2: CARDÁPIO ---
 elif aba == "Cardápio":
@@ -143,3 +152,4 @@ elif aba == "Clientes":
 elif aba == "Relatório":
     st.table(pd.DataFrame(st.session_state.vendas))
  implementa nesse codigo
+
