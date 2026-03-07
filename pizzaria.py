@@ -4,19 +4,28 @@ import json
 import os
 from datetime import datetime
 from fpdf import FPDF
+import streamlit.components.v1 as components
 
 # --- FUNÇÃO PARA GERAR COMANDA ---
-def gerar_comanda_pdf(c_nome, total, obs):
+def gerar_comanda_pdf(c_nome, s1, s2, borda, bebs_dict, total, obs):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Arial", 'B', 16)
     pdf.cell(200, 10, txt="COMANDA DE PEDIDO", ln=True, align='C')
     pdf.set_font("Arial", size=12)
-    pdf.ln(10)
+    pdf.ln(5)
     pdf.cell(200, 10, txt=f"Data: {datetime.now().strftime('%d/%m/%Y %H:%M')}", ln=True)
     pdf.cell(200, 10, txt=f"Cliente: {c_nome}", ln=True)
-    pdf.cell(200, 10, txt=f"Total: R$ {total:.2f}", ln=True)
+    pdf.ln(5)
+    pdf.cell(200, 10, txt=f"Sabor 1: {s1}", ln=True)
+    if s2 != "Nenhum":
+        pdf.cell(200, 10, txt=f"Sabor 2: {s2}", ln=True)
+    pdf.cell(200, 10, txt=f"Borda: {borda}", ln=True)
+    pdf.cell(200, 10, txt=f"Bebidas: {', '.join(bebs_dict)}", ln=True)
+    pdf.ln(5)
     pdf.cell(200, 10, txt=f"Obs: {obs}", ln=True)
+    pdf.set_font("Arial", 'B', 14)
+    pdf.cell(200, 10, txt=f"TOTAL: R$ {total:.2f}", ln=True)
     
     caminho = "comanda.pdf"
     pdf.output(caminho)
@@ -76,17 +85,30 @@ if aba == "PDV - Pedidos":
         total = (preco_base + v_borda + preco_bebs + taxa_entrega) - desc
         st.subheader(f"💰 Total: R$ {total:.2f}")
 
-        if st.button("✅ FINALIZAR E IMPRIMIR"):
-            nova_venda = {"Data": datetime.now().strftime("%d/%m %H:%M"), "Cliente": c_sel['nome'], "Total": total, "Obs": obs}
-            st.session_state.vendas.append(nova_venda)
-            salvar_dados('vendas.json', st.session_state.vendas)
-            
-            caminho_pdf = gerar_comanda_pdf(c_sel['nome'], total, obs)
-            with open(caminho_pdf, "rb") as f:
-                st.download_button("🖨️ BAIXAR E IMPRIMIR COMANDA", f, "comanda.pdf", "application/pdf")
-            st.success("Pedido registrado!")
+# ... (seu código de salvamento de venda continua o mesmo)
 
-# --- (O resto do seu código permanece o mesmo para as outras abas) ---
+if st.button("✅ FINALIZAR E IMPRIMIR"):
+    # 1. Salvar no JSON
+    nova_venda = {"Data": datetime.now().strftime("%d/%m %H:%M"), "Cliente": c_sel['nome'], "Total": total, "Obs": obs}
+    st.session_state.vendas.append(nova_venda)
+    salvar_dados('vendas.json', st.session_state.vendas)
+    
+    # 2. Gerar o PDF
+    caminho_pdf = gerar_comanda_pdf(c_sel['nome'], s1, s2, borda_sel, bebs, total, obs)
+    
+    # 3. Exibir o PDF e injetar o comando de imprimir
+    with open(caminho_pdf, "rb") as f:
+        st.download_button("📥 Baixar se a impressão falhar", f, "comanda.pdf", "application/pdf")
+    
+    # Injeta o JavaScript para abrir a janela de impressão
+    # Nota: Isso funciona melhor se você abrir o PDF em uma nova janela ou aba.
+    js = """
+    <script>
+        window.print();
+    </script>
+    """
+    components.html(js, height=0)
+    st.success("Pedido registrado! A janela de impressão deve aparecer agora.")
 # --- TELA 2: CARDÁPIO ---
 elif aba == "Cardápio":
     st.header("Gerenciar Cardápio")
@@ -148,6 +170,7 @@ elif aba == "Clientes":
 # --- TELA 5: RELATÓRIO ---
 elif aba == "Relatório":
     st.table(pd.DataFrame(st.session_state.vendas))
+
 
 
 
