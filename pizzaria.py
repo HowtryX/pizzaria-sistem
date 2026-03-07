@@ -117,44 +117,44 @@ if aba == "PDV - Pedidos":
             # --- BLOCO DE FINALIZAÇÃO ---
            # --- BLOCO DE FINALIZAÇÃO CORRIGIDO ---
             # --- BLOCO DE FINALIZAÇÃO ---
-        if st.button("✅ FINALIZAR E IMPRIMIR"):
-            if not st.session_state.carrinho:
-                st.error("O carrinho está vazio!")
-            else:
+            if st.button("✅ FINALIZAR E IMPRIMIR"):
+                if not st.session_state.carrinho:
+                    st.error("O carrinho está vazio!")
+                else:
                 # 1. Salvar dados
-                nova_venda = {
-                    "Data": datetime.now().strftime("%d/%m %H:%M"), 
-                    "Cliente": c_sel['nome'], 
-                    "Itens": st.session_state.carrinho, 
-                    "Total": total, 
-                    "Obs": obs
-                }
-                st.session_state.vendas.append(nova_venda)
-                salvar_dados('vendas.json', st.session_state.vendas)
+                    nova_venda = {
+                        "Data": datetime.now().strftime("%d/%m %H:%M"), 
+                        "Cliente": c_sel['nome'], 
+                        "Itens": st.session_state.carrinho, 
+                        "Total": total, 
+                        "Obs": obs
+                    }
+                    st.session_state.vendas.append(nova_venda)
+                    salvar_dados('vendas.json', st.session_state.vendas)
                 
                 # 2. Gerar PDF
-                caminho_pdf = gerar_comanda_pdf(c_sel['nome'], st.session_state.carrinho, bebs, total, obs)
+                    caminho_pdf = gerar_comanda_pdf(c_sel['nome'], st.session_state.carrinho, bebs, total, obs)
                 
                 # 3. Guardar o caminho no session_state para poder imprimir depois
-                st.session_state.ultimo_pdf = caminho_pdf
-                st.success("Pedido registrado!")
+                    st.session_state.ultimo_pdf = caminho_pdf
+                    st.success("Pedido registrado!")
 
         # --- BOTÃO DE IMPRESSÃO (Fora do if acima) ---
-        if 'ultimo_pdf' in st.session_state:
-            import base64
-            with open(st.session_state.ultimo_pdf, "rb") as f:
-                b64 = base64.b64encode(f.read()).decode('utf-8')
+            if 'ultimo_pdf' in st.session_state:
+                import base64
+                with open(st.session_state.ultimo_pdf, "rb") as f:
+                    b64 = base64.b64encode(f.read()).decode('utf-8')
             
-            st.markdown(
-                f'<a href="data:application/pdf;base64,{b64}" target="_blank" style="padding: 10px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">🖨️ IMPRIMIR COMANDA</a>', 
-                unsafe_allow_html=True
-            )
+                st.markdown(
+                    f'<a href="data:application/pdf;base64,{b64}" target="_blank" style="padding: 10px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">🖨️ IMPRIMIR COMANDA</a>', 
+                    unsafe_allow_html=True
+                )
 
         # --- BOTÃO DE NOVA VENDA (O "Reset" real) ---
-            if st.button("🔄 INICIAR NOVO PEDIDO"):
-                st.session_state.carrinho = []
-                if 'ultimo_pdf' in st.session_state: del st.session_state.ultimo_pdf
-                st.rerun() # Limpa a memória e redesenha a tela
+                if st.button("🔄 INICIAR NOVO PEDIDO"):
+                    st.session_state.carrinho = []
+                    if 'ultimo_pdf' in st.session_state: del st.session_state.ultimo_pdf
+                    st.rerun() # Limpa a memória e redesenha a tela
             
 elif aba == "Cardápio":
     st.header("Gerenciar Cardápio")
@@ -216,6 +216,7 @@ elif aba == "Clientes":
 # --- TELA 5: RELATÓRIO ---
 elif aba == "Relatório":
     st.table(pd.DataFrame(st.session_state.vendas))
+
 
 
 
