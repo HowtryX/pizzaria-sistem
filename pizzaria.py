@@ -173,7 +173,7 @@ if aba == "PDV - Pedidos":
             st.markdown(f'<a href="data:application/pdf;base64,{b64}" download="comanda.pdf"><button style="width:100%; cursor:pointer; background-color:#28a745; color:white; border:none; padding:10px; border-radius:5px;">🖨️ BAIXAR/IMPRIMIR COMANDA</button></a>', unsafe_allow_html=True)
         
         # Botão para limpar a tela e remover o PDF da sessão
-        if st.button("🔄 Novo Pedido"):
+        if st.button("🔄 Novo Pedido", key="btn_novo_pedido"):
             del st.session_state.ultimo_pdf
             st.rerun()
 # --- TELA: CARDÁPIO ---
@@ -261,6 +261,7 @@ elif aba == "Promoções":
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.dataframe(pd.DataFrame(st.session_state.vendas))
+
 
 
 
