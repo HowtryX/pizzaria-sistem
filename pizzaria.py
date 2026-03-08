@@ -17,7 +17,7 @@ def carregar_dados(arquivo, padrao):
 def salvar_dados(arquivo, dados):
   # Salva em arquivo temporário antes de substituir para evitar corrupção
   temp_file = arquivo + '.tmp'
-with open(temp_file, 'w', encoding='utf-8') as f: 
+with open(temp_file, 'w', encoding='utf-8') as f:
   json.dump(dados, f, indent=4, ensure_ascii=False)
 os.replace(temp_file, arquivo)
 
@@ -377,6 +377,7 @@ elif aba == "Promoções":
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.dataframe(pd.DataFrame(st.session_state.vendas))
+
 
 
 
