@@ -11,7 +11,7 @@ def carregar_dados(arquivo, padrao):
   if os.path.exists(arquivo):
     try:
       with open(arquivo, 'r', encoding='utf-8') as f: return json.load(f)
-        except: return padrao
+      except: return padrao
           return padrao
 
 def salvar_dados(arquivo, dados):
@@ -377,5 +377,6 @@ elif aba == "Promoções":
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.dataframe(pd.DataFrame(st.session_state.vendas))
+
 
 
