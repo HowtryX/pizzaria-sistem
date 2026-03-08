@@ -64,6 +64,7 @@ if 'vendas' not in st.session_state: st.session_state.vendas = carregar_dados('v
 aba = st.sidebar.radio("Navegação:", ["PDV - Pedidos", "Cardápio", "Promoções", "Clientes", "Relatório"])
 
 # --- TELA: PDV ---
+# --- TELA: PDV ---
 if aba == "PDV - Pedidos":
     st.header("🛒 Terminal de Vendas")
     nome_busca = st.text_input("🔍 Buscar cliente:")
@@ -85,8 +86,11 @@ if aba == "PDV - Pedidos":
                     preco_unit = p_sel.get('preco_promocional', 0) / qtd
                     for _ in range(qtd):
                         st.session_state.carrinho.append({
-                            "s1": p_sel.get('itens', {}).get('s1'), "s2": p_sel.get('itens', {}).get('s2'),
-                            "borda": p_sel.get('itens', {}).get('borda'), "preco": preco_unit, "entrega_gratis": p_sel.get('entrega_inclusa')
+                            "s1": p_sel.get('itens', {}).get('s1'), 
+                            "s2": p_sel.get('itens', {}).get('s2'),
+                            "borda": p_sel.get('itens', {}).get('borda'), 
+                            "preco": preco_unit, 
+                            "entrega_gratis": p_sel.get('entrega_inclusa', False) # Correção aqui
                         })
                     st.rerun()
 
@@ -100,7 +104,7 @@ if aba == "PDV - Pedidos":
             total_m = ((p1 + p2) / 2) + st.session_state.bordas.get(borda_m, 0)
             
             if st.button("🍕 Adicionar Pizza"):
-                st.session_state.carrinho.append({"s1": s1_m, "s2": s2_m, "borda": borda_m, "preco": total_m})
+                st.session_state.carrinho.append({"s1": s1_m, "s2": s2_m, "borda": borda_m, "preco": total_m, "entrega_gratis": False})
                 st.rerun()
 
     st.write("---")
@@ -123,9 +127,18 @@ if aba == "PDV - Pedidos":
                 st.session_state.carrinho.pop(i)
                 st.rerun()
         
-        taxa = st.number_input("Taxa de Entrega:", value=8.0)
+        # --- LÓGICA DE FRETE GRÁTIS CORRIGIDA ---
+        tem_frete_gratis = any(item.get('entrega_gratis') == True for item in st.session_state.carrinho)
+        valor_frete_inicial = 0.0 if tem_frete_gratis else 8.0
+        
+        taxa = st.number_input("Taxa de Entrega:", value=valor_frete_inicial)
+        
+        if tem_frete_gratis and taxa == 0.0:
+            st.success("🚚 Frete Grátis aplicado por promoção!")
+
         total = sum(i['preco'] for i in st.session_state.carrinho) + taxa
         st.subheader(f"Total: R$ {total:.2f}")
+        
         if st.button("✅ FINALIZAR"):
             st.session_state.vendas.append({"data": datetime.now().strftime("%d/%m/%Y"), "total": total})
             salvar_dados('vendas.json', st.session_state.vendas)
@@ -134,7 +147,6 @@ if aba == "PDV - Pedidos":
             st.rerun()
     else:
         st.info("Carrinho vazio.")
-
 # --- TELA: CARDÁPIO ---
 elif aba == "Cardápio":
     st.header("⚙️ Gestão de Cardápio")
@@ -213,4 +225,5 @@ elif aba == "Promoções":
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.dataframe(pd.DataFrame(st.session_state.vendas))
+
 
