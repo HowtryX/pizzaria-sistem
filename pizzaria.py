@@ -133,49 +133,50 @@ if aba == "PDV - Pedidos":
             total_geral = total_pizzas + taxa
             st.subheader(f"💰 Total Geral: R$ {total_geral:.2f}")
 
-            if st.button("✅ FINALIZAR VENDA"):
-                venda_final = {"data": datetime.now().strftime("%d/%m/%Y %H:%M"), "cliente": c_sel.get('nome'), "total": total_geral, "itens": st.session_state.carrinho.copy()}
+           # --- Lógica de Finalização ---
+        if st.button("✅ FINALIZAR VENDA", key="btn_finalizar"):
+            if len(st.session_state.carrinho) > 0:
+                # 1. Salva nos dados
+                venda_final = {
+                    "data": datetime.now().strftime("%d/%m/%Y %H:%M"), 
+                    "cliente": c_sel.get('nome'), 
+                    "total": total_geral, 
+                    "itens": st.session_state.carrinho.copy()
+                }
                 st.session_state.vendas.append(venda_final)
                 salvar_dados('vendas.json', st.session_state.vendas)
                 
-                # Gera o PDF
+                # 2. Gera o PDF
                 st.session_state.ultimo_pdf = gerar_comanda_pdf(c_sel['nome'], st.session_state.carrinho, [], total_geral, "")
                 
-                # Limpa carrinho e recarrega
+                # 3. Limpa carrinho e recarrega para mostrar o link
                 st.session_state.carrinho = []
                 st.rerun()
+            else:
+                st.error("O carrinho está vazio!")
 
-    # Bloco para exibir o link de impressão/visualização
-                if 'ultimo_pdf' in st.session_state:
-                        st.write("---")
-                    with open(st.session_state.ultimo_pdf, "rb") as f:
-                        b64 = base64.b64encode(f.read()).decode()
-        
-        # target="_blank" força a abertura em nova aba. 
-        # Removi o atributo 'download' para o navegador tratar como visualização.
-                        st.markdown(
-            f'<a href="data:application/pdf;base64,{b64}" target="_blank" style="text-decoration:none;">'
-            f'<button style="width:100%; cursor:pointer; background-color:#007bff; color:white; border:none; padding:15px; border-radius:5px; font-size:16px;">'
-            f'🖨️ ABRIR COMANDA PARA IMPRIMIR'
-            f'</button></a>', 
-                        unsafe_allow_html=True
-        )
-        
-                        if st.button("🔄 Novo Pedido"):
-                        del st.session_state.ultimo_pdf
-                            st.rerun()
-
-    # --- CORREÇÃO: O LINK DEVE FICAR FORA DO BOTÃO DE FINALIZAR ---
-        if 'ultimo_pdf' in st.session_state:
+        # --- Bloco do Link (Fora do Botão de Finalizar) ---
+        if 'ultimo_pdf' in st.session_state and os.path.exists(st.session_state.ultimo_pdf):
             st.write("---")
             with open(st.session_state.ultimo_pdf, "rb") as f:
                 b64 = base64.b64encode(f.read()).decode()
-            st.markdown(f'<a href="data:application/pdf;base64,{b64}" download="comanda.pdf"><button style="width:100%; cursor:pointer; background-color:#28a745; color:white; border:none; padding:10px; border-radius:5px;">🖨️ BAIXAR/IMPRIMIR COMANDA</button></a>', unsafe_allow_html=True)
-        
-        # Botão para limpar a tela e remover o PDF da sessão
-        if st.button("🔄 Novo Pedido", key="btn_novo_pedido"):
-            del st.session_state.ultimo_pdf
-            st.rerun()
+            
+            # Link para ABRIR o PDF (target="_blank")
+            st.markdown(
+                f'<a href="data:application/pdf;base64,{b64}" target="_blank" style="text-decoration:none;">'
+                f'<button style="width:100%; cursor:pointer; background-color:#28a745; color:white; border:none; padding:15px; border-radius:5px; font-size:16px;">'
+                f'🖨️ ABRIR COMANDA PARA IMPRIMIR'
+                f'</button></a>', 
+                unsafe_allow_html=True
+            )
+            
+            # Botão para limpar e resetar
+            if st.button("🔄 Novo Pedido", key="btn_novo_pedido"):
+                # Remove o arquivo físico se quiser
+                if os.path.exists(st.session_state.ultimo_pdf):
+                    os.remove(st.session_state.ultimo_pdf)
+                del st.session_state.ultimo_pdf
+                st.rerun()
 # --- TELA: CARDÁPIO ---
 elif aba == "Cardápio":
     st.header("⚙️ Gestão de Cardápio")
@@ -261,6 +262,7 @@ elif aba == "Promoções":
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.dataframe(pd.DataFrame(st.session_state.vendas))
+
 
 
 
