@@ -119,7 +119,7 @@ if aba == "PDV - Pedidos":
                 st.session_state.carrinho.append({"s1": s1_m, "s2": s2_m, "borda": borda_m, "bebidas": bebs_m, "preco": total_m, "tipo": "Manual", "entrega_gratis": False})
                 st.rerun()
 
- # --- BLOCO FINAL: CARRINHO E FINALIZAÇÃO ---
+    # Certifique-se de que estas linhas abaixo estejam com 4 espaços de recuo
     st.write("---")
     st.write("### 🛒 Carrinho")
 
@@ -171,6 +171,10 @@ if aba == "PDV - Pedidos":
             st.session_state.ultimo_pdf = gerar_comanda_pdf(c_sel['nome'], st.session_state.carrinho, [], total_geral, "")
             st.session_state.carrinho = []
             st.rerun()
+            
+    # --- BLOCO 3: VAZIO ---
+    else:
+        st.info("O carrinho está vazio.")
 # --- BLOCO 3: CARRINHO VAZIO (Estado inicial) ---
 else:
     st.info("O carrinho está vazio. Adicione itens para iniciar um pedido.")
@@ -259,6 +263,7 @@ elif aba == "Promoções":
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.dataframe(pd.DataFrame(st.session_state.vendas))
+
 
 
 
