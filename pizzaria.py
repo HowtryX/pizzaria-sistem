@@ -20,6 +20,11 @@ def ler_dados(aba):
         return df
     except Exception:
         return pd.DataFrame()
+df_clientes = ler_dados("clientes")
+if df_clientes.empty:
+    st.warning("⚠️ Atenção: A aba 'clientes' não foi encontrada ou está sem permissão de leitura!")
+else:
+    st.success("✅ Planilha lida com sucesso!")
 def salvar_dados_sheets(df, aba):
     try:
         # Remove linhas onde o nome/sabor esteja vazio
@@ -203,6 +208,7 @@ elif aba == "Relatório":
         st.metric("Total Faturado", f"R$ {df_v['total'].sum():.2f}")
     else:
         st.info("Nenhuma venda no sistema.")
+
 
 
 
