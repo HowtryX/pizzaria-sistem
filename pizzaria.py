@@ -123,10 +123,10 @@ if aba == "PDV - Pedidos":
         st.write("### 🛒 Carrinho")
         
         # Só habilita a finalização se houver itens no carrinho
-            total_pizzas = sum(item.get('preco', 0) for item in st.session_state.carrinho)
-            taxa = st.number_input("Taxa de Entrega (R$):", value=0.0 if any(i.get('entrega_gratis') for i in st.session_state.carrinho) else 8.0)
-            total_geral = total_pizzas + taxa
-            st.subheader(f"💰 Total Geral: R$ {total_geral:.2f}")
+        total_pizzas = sum(item.get('preco', 0) for item in st.session_state.carrinho)
+        taxa = st.number_input("Taxa de Entrega (R$):", value=0.0 if any(i.get('entrega_gratis') for i in st.session_state.carrinho) else 8.0)
+        total_geral = total_pizzas + taxa
+        st.subheader(f"💰 Total Geral: R$ {total_geral:.2f}")
 
            # --- Lógica de Finalização ---
         if st.button("✅ FINALIZAR VENDA", key="btn_finalizar_venda"):
@@ -247,6 +247,7 @@ elif aba == "Promoções":
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.dataframe(pd.DataFrame(st.session_state.vendas))
+
 
 
 
