@@ -23,17 +23,17 @@ os.replace(temp_file, arquivo)
 
 # --- FUNÇÃO PARA GERAR COMANDA ---
 def gerar_comanda_pdf(c_nome, lista_itens, bebs_dict, total, obs):
-    pdf = FPDF(unit='mm', format=(72, 200)) 
-    pdf.add_page()
-    pdf.set_margins(5, 5, 5)
-    
-    pdf.set_font("Arial", 'B', 12)
-    pdf.cell(62, 7, txt="Imperio Rita", ln=True, align='C')
-    
-    pdf.set_font("Arial", size=9)
-    pdf.cell(62, 5, txt=f"Data: {datetime.now().strftime('%d/%m %H:%M')}", ln=True)
-    pdf.cell(62, 5, txt=f"Cliente: {c_nome}", ln=True)
-    pdf.ln(2)
+  pdf = FPDF(unit='mm', format=(72, 200)) 
+  pdf.add_page()
+  pdf.set_margins(5, 5, 5)
+
+  pdf.set_font("Arial", 'B', 12)
+  pdf.cell(62, 7, txt="Imperio Rita", ln=True, align='C')
+
+  pdf.set_font("Arial", size=9)
+  pdf.cell(62, 5, txt=f"Data: {datetime.now().strftime('%d/%m %H:%M')}", ln=True)
+  pdf.cell(62, 5, txt=f"Cliente: {c_nome}", ln=True)
+  pdf.ln(2)
     
     for i, item in enumerate(lista_itens):
         pdf.set_font("Arial", 'B', 9)
@@ -377,6 +377,7 @@ elif aba == "Promoções":
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.dataframe(pd.DataFrame(st.session_state.vendas))
+
 
 
 
