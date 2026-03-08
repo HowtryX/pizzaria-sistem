@@ -120,7 +120,7 @@ if aba == "PDV - Pedidos":
                 st.rerun()
 
  st.write("---")
-st.write("### 🛒 Carrinho")
+ st.write("### 🛒 Carrinho")
 
 # --- BLOCO 1: SE HOUVER PDF GERADO (Modo Impressão) ---
 # Priorizamos o PDF, pois se ele existe, a venda acabou de ser feita
@@ -262,6 +262,7 @@ elif aba == "Promoções":
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.dataframe(pd.DataFrame(st.session_state.vendas))
+
 
 
 
