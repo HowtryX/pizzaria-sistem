@@ -15,11 +15,11 @@ def carregar_dados(arquivo, padrao):
           return padrao
 
 def salvar_dados(arquivo, dados):
-    # Salva em arquivo temporário antes de substituir para evitar corrupção
-    temp_file = arquivo + '.tmp'
-    with open(temp_file, 'w', encoding='utf-8') as f: 
-        json.dump(dados, f, indent=4, ensure_ascii=False)
-    os.replace(temp_file, arquivo)
+  # Salva em arquivo temporário antes de substituir para evitar corrupção
+  temp_file = arquivo + '.tmp'
+with open(temp_file, 'w', encoding='utf-8') as f: 
+  json.dump(dados, f, indent=4, ensure_ascii=False)
+os.replace(temp_file, arquivo)
 
 # --- FUNÇÃO PARA GERAR COMANDA ---
 def gerar_comanda_pdf(c_nome, lista_itens, bebs_dict, total, obs):
@@ -377,6 +377,7 @@ elif aba == "Promoções":
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.dataframe(pd.DataFrame(st.session_state.vendas))
+
 
 
 
