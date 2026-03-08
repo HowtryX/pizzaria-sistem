@@ -72,28 +72,27 @@ st.session_state.vendas = carregar_dados('vendas.json', [])
 aba = st.sidebar.radio("Navegação:", ["PDV - Pedidos", "Cardápio", "Promoções", "Clientes", "Relatório"])
 
 # --- TELA 1: PDV ---
-# --- TELA 1: PDV ---
 if aba == "PDV - Pedidos":
-    st.header("🛒 Terminal de Vendas")
-    
+  st.header("🛒 Terminal de Vendas")
+
     # 1. Busca de Cliente
-    nome_busca = st.text_input("🔍 Buscar cliente:")
-    resultados = [c for c in st.session_state.clientes if nome_busca.lower() in c.get('nome', '').lower()]
-    
+nome_busca = st.text_input("🔍 Buscar cliente:")
+resultados = [c for c in st.session_state.clientes if nome_busca.lower() in c.get('nome', '').lower()]
+
     # Selectbox de cliente
-    c_sel = st.selectbox("Selecione o cliente:", resultados, format_func=lambda x: x.get('nome', 'Sem Nome')) if resultados else None
-    
-    if not resultados and nome_busca:
-        st.warning("⚠️ Cliente não encontrado. Cadastre-o na aba Clientes.")
-    
-    if c_sel:
-        st.info(f"👤 Cliente: {c_sel.get('nome')} | 📍 {c_sel.get('endereco', 'Endereço não cadastrado')}")
-        
+  c_sel = st.selectbox("Selecione o cliente:", resultados, format_func=lambda x: x.get('nome', 'Sem Nome')) if resultados else None
+
+    if not resultados and nome_busca:
+      st.warning("⚠️ Cliente não encontrado. Cadastre-o na aba Clientes.")
+    
+    if c_sel:
+      st.info(f"👤 Cliente: {c_sel.get('nome')} | 📍 {c_sel.get('endereco', 'Endereço não cadastrado')}")
+      
         # 2. SELEÇÃO DE ITENS
-        st.subheader("➕ Adicionar ao Pedido")
-        tab_promo, tab_manual = st.tabs(["🎁 Combos/Promoções", "🍕 Seleção Manual"])
-        
-        with tab_promo:
+      st.subheader("➕ Adicionar ao Pedido")
+          tab_promo, tab_manual = st.tabs(["🎁 Combos/Promoções", "🍕 Seleção Manual"])
+
+          with tab_promo:
             if st.session_state.promocoes:
                 p_sel = st.selectbox(
                     "Escolha o combo desejado:", 
@@ -377,6 +376,7 @@ elif aba == "Promoções":
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.dataframe(pd.DataFrame(st.session_state.vendas))
+
 
 
 
