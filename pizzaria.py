@@ -146,24 +146,24 @@ if aba == "PDV - Pedidos":
                 st.rerun()
 
     # Bloco para exibir o link de impressão/visualização
-    if 'ultimo_pdf' in st.session_state:
-        st.write("---")
-        with open(st.session_state.ultimo_pdf, "rb") as f:
-            b64 = base64.b64encode(f.read()).decode()
+                if 'ultimo_pdf' in st.session_state:
+                        st.write("---")
+                    with open(st.session_state.ultimo_pdf, "rb") as f:
+                        b64 = base64.b64encode(f.read()).decode()
         
         # target="_blank" força a abertura em nova aba. 
         # Removi o atributo 'download' para o navegador tratar como visualização.
-        st.markdown(
+                        st.markdown(
             f'<a href="data:application/pdf;base64,{b64}" target="_blank" style="text-decoration:none;">'
             f'<button style="width:100%; cursor:pointer; background-color:#007bff; color:white; border:none; padding:15px; border-radius:5px; font-size:16px;">'
             f'🖨️ ABRIR COMANDA PARA IMPRIMIR'
             f'</button></a>', 
-            unsafe_allow_html=True
+                        unsafe_allow_html=True
         )
         
-        if st.button("🔄 Novo Pedido"):
-            del st.session_state.ultimo_pdf
-            st.rerun()
+                        if st.button("🔄 Novo Pedido"):
+                        del st.session_state.ultimo_pdf
+                            st.rerun()
 
     # --- CORREÇÃO: O LINK DEVE FICAR FORA DO BOTÃO DE FINALIZAR ---
         if 'ultimo_pdf' in st.session_state:
@@ -261,6 +261,7 @@ elif aba == "Promoções":
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.dataframe(pd.DataFrame(st.session_state.vendas))
+
 
 
 
