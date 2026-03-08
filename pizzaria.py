@@ -93,12 +93,12 @@ resultados = [c for c in st.session_state.clientes if nome_busca.lower() in c.ge
           tab_promo, tab_manual = st.tabs(["🎁 Combos/Promoções", "🍕 Seleção Manual"])
 
           with tab_promo:
-            if st.session_state.promocoes:
-                p_sel = st.selectbox(
-                    "Escolha o combo desejado:", 
-                    st.session_state.promocoes, 
-                    format_func=lambda x: f"{x.get('nome')} - R$ {x.get('preco_promocional', 0):.2f}",
-                    key="sb_promo_pdv"
+            if st.session_state.promocoes:
+              p_sel = st.selectbox(
+                "Escolha o combo desejado:",
+                  st.session_state.promocoes,
+                      format_func=lambda x: f"{x.get('nome')} - R$ {x.get('preco_promocional', 0):.2f}",
+                key="sb_promo_pdv"
                 )
                 
                 if st.button("🚀 Aplicar Este Combo", key="btn_aplicar_promo"):
@@ -376,6 +376,7 @@ elif aba == "Promoções":
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.dataframe(pd.DataFrame(st.session_state.vendas))
+
 
 
 
