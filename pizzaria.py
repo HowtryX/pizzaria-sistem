@@ -176,8 +176,8 @@ if aba == "PDV - Pedidos":
     else:
         st.info("O carrinho está vazio.")
 # --- BLOCO 3: CARRINHO VAZIO (Estado inicial) ---
-        else:
-            st.info("O carrinho está vazio. Adicione itens para iniciar um pedido.")
+else:
+     st.info("O carrinho está vazio. Adicione itens para iniciar um pedido.")
 # --- TELA: CARDÁPIO ---
     if aba == "Cardápio":
         st.header("⚙️ Gestão de Cardápio")
@@ -262,5 +262,6 @@ elif aba == "Promoções":
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.dataframe(pd.DataFrame(st.session_state.vendas))
+
 
 
