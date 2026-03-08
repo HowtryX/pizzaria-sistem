@@ -123,11 +123,6 @@ if aba == "PDV - Pedidos":
         st.write("### 🛒 Carrinho")
         
         # Só habilita a finalização se houver itens no carrinho
-        if not st.session_state.carrinho:
-            st.warning("O carrinho está vazio. Adicione itens para finalizar.")
-        else:
-            # ... (código dos itens do carrinho e botão de exclusão) ...
-
             total_pizzas = sum(item.get('preco', 0) for item in st.session_state.carrinho)
             taxa = st.number_input("Taxa de Entrega (R$):", value=0.0 if any(i.get('entrega_gratis') for i in st.session_state.carrinho) else 8.0)
             total_geral = total_pizzas + taxa
@@ -252,6 +247,7 @@ elif aba == "Promoções":
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.dataframe(pd.DataFrame(st.session_state.vendas))
+
 
 
 
