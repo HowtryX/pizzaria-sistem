@@ -83,7 +83,7 @@ nome_busca = st.text_input("🔍 Buscar cliente:")
 resultados = [c for c in st.session_state.clientes if nome_busca.lower() in c.get('nome', '').lower()]
 
   # Selectbox de cliente
-  c_sel = st.selectbox("Selecione o cliente:", resultados, format_func=lambda x: x.get('nome', 'Sem Nome')) if resultados else None
+c_sel = st.selectbox("Selecione o cliente:", resultados, format_func=lambda x: x.get('nome', 'Sem Nome')) if resultados else None
 
     if not resultados and nome_busca:
       st.warning("⚠️ Cliente não encontrado. Cadastre-o na aba Clientes.")
@@ -360,6 +360,7 @@ salvar_dados('promocoes.json', st.session_state.promocoes)
 eliflif aba == "Relatório":
    st.header("📊 Vendas")
    st.dataframe(pd.DataFrame(st.session_state.vendas))
+
 
 
 
