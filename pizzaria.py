@@ -168,16 +168,65 @@ elif aba == "Clientes":
         salvar_dados('clientes.json', st.session_state.clientes)
         st.rerun()
 
-# --- TELA: PROMOÇÕES ---
+# --- TELA 3: PROMOÇÕES ---
 elif aba == "Promoções":
-    st.header("🎁 Gestão de Promoções")
-    df = st.data_editor(pd.DataFrame(st.session_state.promocoes), num_rows="dynamic", use_container_width=True)
-    if st.button("💾 Salvar Promoções"):
-        st.session_state.promocoes = df.to_dict('records')
-        salvar_dados('promocoes.json', st.session_state.promocoes)
-        st.rerun()
+    st.header("🎁 Criar Promoção Personalizada")
+    
+    with st.expander("➕ Nova Promoção de Combo/Pizza"):
+        nome_promo = st.text_input("Nome da Promoção (ex: Combo Casal)")
+        s1 = st.selectbox("Sabor 1", list(st.session_state.pizzas.keys()), key="promo_s1")
+        s2 = st.selectbox("Sabor 2", ["Nenhum"] + list(st.session_state.pizzas.keys()), key="promo_s2")
+        borda = st.selectbox("Borda:", list(st.session_state.bordas.keys()), key="promo_borda")
+        bebs = st.multiselect("Bebidas:", list(st.session_state.bebidas.keys()), key="promo_bebs")
+        preco_final = st.number_input("Preço Promocional (R$):", min_value=0.0)
+        
+        # Nova opção para o usuário
+        entrega_inclusa = st.checkbox("Incluir Taxa de Entrega nesta promoção?")
+        
+        if st.button("Salvar Promoção"):
+            nova_promo = {
+                "nome": nome_promo if nome_promo else "Promoção Sem Nome",
+                "itens": {"s1": s1, "s2": s2, "borda": borda, "bebidas": bebs},
+                "preco_promocional": preco_final,
+                "entrega_inclusa": entrega_inclusa # Salvando a nova regra
+            }
+            st.session_state.promocoes.append(nova_promo)
+            salvar_dados('promocoes.json', st.session_state.promocoes)
+            st.success("Promoção criada!")
+            st.rerun()
+
+    st.subheader("Promoções Ativas")
+    if not isinstance(st.session_state.promocoes, list):
+        st.session_state.promocoes = []
+
+    for i, p in enumerate(st.session_state.promocoes):
+        # Proteção contra erros de chave com .get()
+        nome = p.get('nome', 'Promoção Antiga')
+        itens = p.get('itens', {})
+        preco = p.get('preco_promocional', 0.0)
+        entrega = p.get('entrega_inclusa', False)
+        
+        with st.container(border=True):
+            c1, c2 = st.columns([5, 1])
+            c1.markdown(f"### {nome}")
+            if itens:
+                c1.write(f"🍕 {itens.get('s1')} + {itens.get('s2')} | Borda: {itens.get('borda')}")
+                c1.write(f"🥤 Bebidas: {', '.join(itens.get('bebidas', [])) if itens.get('bebidas') else 'Nenhuma'}")
+            
+            c1.subheader(f"💰 Preço: R$ {preco:.2f}")
+            # Exibe o status da entrega
+            if entrega:
+                c1.success("🚚 Entrega Grátis incluída!")
+            else:
+                c1.info("🏠 Taxa de entrega cobrada à parte.")
+            
+            if c2.button("🗑️", key=f"del_p_{i}"):
+                st.session_state.promocoes.pop(i)
+                salvar_dados('promocoes.json', st.session_state.promocoes)
+                st.rerun()
 
 # --- TELA: RELATÓRIO ---
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.dataframe(pd.DataFrame(st.session_state.vendas))
+
