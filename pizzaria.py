@@ -137,21 +137,28 @@ if aba == "PDV - Pedidos":
 
             if st.button("✅ FINALIZAR VENDA"):
                 # 1. Salva nos dados
-                    st.session_state.vendas.append({"data": datetime.now().strftime("%d/%m/%Y %H:%M"), "cliente": c_sel.get('nome'), "total": total_geral, "itens": st.session_state.carrinho.copy()})
-                    salvar_dados('vendas.json', st.session_state.vendas)
+                venda_final = {"data": datetime.now().strftime("%d/%m/%Y %H:%M"), "cliente": c_sel.get('nome'), "total": total_geral, "itens": st.session_state.carrinho.copy()}
+                st.session_state.vendas.append(venda_final)
+                salvar_dados('vendas.json', st.session_state.vendas)
                 
-                # 2. Chama a função de gerar o PDF
-                    st.session_state.ultimo_pdf = gerar_comanda_pdf(c_sel['nome'], st.session_state.carrinho, [], total_geral, "")
+                # 2. Gera o PDF
+                st.session_state.ultimo_pdf = gerar_comanda_pdf(c_sel['nome'], st.session_state.carrinho, [], total_geral, "")
                 
                 # 3. Limpa carrinho e recarrega
-                    st.session_state.carrinho = []
-                    st.rerun()
+                st.session_state.carrinho = []
+                st.rerun()
 
-            # Exibe o link para download se o PDF existir
-                if 'ultimo_pdf' in st.session_state:
-                    with open(st.session_state.ultimo_pdf, "rb") as f:
-                        b64 = base64.b64encode(f.read()).decode()
-                    st.markdown(f'<a href="data:application/pdf;base64,{b64}" download="comanda.pdf"><button style="width:100%; cursor:pointer; background-color:#28a745; color:white; border:none; padding:10px; border-radius:5px;">🖨️ BAIXAR/IMPRIMIR COMANDA</button></a>', unsafe_allow_html=True)
+    # --- CORREÇÃO: O LINK DEVE FICAR FORA DO BOTÃO DE FINALIZAR ---
+    if 'ultimo_pdf' in st.session_state:
+        st.write("---")
+        with open(st.session_state.ultimo_pdf, "rb") as f:
+            b64 = base64.b64encode(f.read()).decode()
+        st.markdown(f'<a href="data:application/pdf;base64,{b64}" download="comanda.pdf"><button style="width:100%; cursor:pointer; background-color:#28a745; color:white; border:none; padding:10px; border-radius:5px;">🖨️ BAIXAR/IMPRIMIR COMANDA</button></a>', unsafe_allow_html=True)
+        
+        # Botão para limpar a tela e remover o PDF da sessão
+        if st.button("🔄 Novo Pedido"):
+            del st.session_state.ultimo_pdf
+            st.rerun()
 # --- TELA: CARDÁPIO ---
 elif aba == "Cardápio":
     st.header("⚙️ Gestão de Cardápio")
@@ -237,6 +244,7 @@ elif aba == "Promoções":
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.dataframe(pd.DataFrame(st.session_state.vendas))
+
 
 
 
