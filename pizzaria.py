@@ -23,7 +23,7 @@ os.replace(temp_file, arquivo)
 
 # --- FUNÇÃO PARA GERAR COMANDA ---
 def gerar_comanda_pdf(c_nome, lista_itens, bebs_dict, total, obs):
-  pdf = FPDF(unit='mm', format=(72, 200)) 
+  pdf = FPDF(unit='mm', format=(72, 200))
   pdf.add_page()
   pdf.set_margins(5, 5, 5)
 
@@ -377,6 +377,7 @@ elif aba == "Promoções":
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.dataframe(pd.DataFrame(st.session_state.vendas))
+
 
 
 
