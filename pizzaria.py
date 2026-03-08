@@ -119,11 +119,33 @@ if aba == "PDV - Pedidos":
                 st.session_state.carrinho.append({"s1": s1_m, "s2": s2_m, "borda": borda_m, "bebidas": bebs_m, "preco": total_m, "tipo": "Manual", "entrega_gratis": False})
                 st.rerun()
 
-        st.write("---")
+ st.write("---")
 st.write("### 🛒 Carrinho")
 
-# --- BLOCO 1: SE O CARRINHO TEM ITENS (Modo Venda) ---
-if st.session_state.carrinho:
+# --- BLOCO 1: SE HOUVER PDF GERADO (Modo Impressão) ---
+# Priorizamos o PDF, pois se ele existe, a venda acabou de ser feita
+if 'ultimo_pdf' in st.session_state:
+    st.success("✅ Venda finalizada com sucesso!")
+    
+    with open(st.session_state.ultimo_pdf, "rb") as f:
+        b64 = base64.b64encode(f.read()).decode()
+    
+    st.markdown(
+        f'<a href="data:application/pdf;base64,{b64}" target="_blank" style="text-decoration:none;">'
+        f'<button style="width:100%; cursor:pointer; background-color:#28a745; color:white; border:none; padding:15px; border-radius:5px; font-size:16px;">'
+        f'🖨️ ABRIR COMANDA PARA IMPRIMIR'
+        f'</button></a>', unsafe_allow_html=True
+    )
+    
+    # Único botão de reset aqui
+    if st.button("🔄 Novo Pedido", key="btn_resetar"):
+        if os.path.exists(st.session_state.ultimo_pdf):
+            os.remove(st.session_state.ultimo_pdf) # Opcional: deleta o arquivo físico
+        del st.session_state.ultimo_pdf
+        st.rerun()
+
+# --- BLOCO 2: SE O CARRINHO TEM ITENS (Modo Venda Ativa) ---
+elif st.session_state.carrinho:
     for i, item in enumerate(st.session_state.carrinho):
         col_nome, col_preco, col_btn = st.columns([3, 1, 1])
         col_nome.write(f"**{item.get('s1')}** / {item.get('s2')} ({item.get('borda')})")
@@ -138,7 +160,6 @@ if st.session_state.carrinho:
     st.subheader(f"💰 Total Geral: R$ {total_geral:.2f}")
 
     if st.button("✅ FINALIZAR VENDA", key="btn_finalizar"):
-        # Salva a venda
         venda_final = {
             "data": datetime.now().strftime("%d/%m/%Y %H:%M"), 
             "cliente": c_sel.get('nome'), 
@@ -148,38 +169,14 @@ if st.session_state.carrinho:
         st.session_state.vendas.append(venda_final)
         salvar_dados('vendas.json', st.session_state.vendas)
         
-        # Gera o PDF e marca que a venda foi finalizada
+        # Gera o PDF
         st.session_state.ultimo_pdf = gerar_comanda_pdf(c_sel['nome'], st.session_state.carrinho, [], total_geral, "")
         st.session_state.carrinho = [] # Limpa carrinho
         st.rerun()
 
-# --- BLOCO 2: SE HOUVER PDF GERADO (Modo Impressão) ---
-elif 'ultimo_pdf' in st.session_state:
-    st.success("✅ Venda finalizada com sucesso!")
-    
-    with open(st.session_state.ultimo_pdf, "rb") as f:
-        b64 = base64.b64encode(f.read()).decode()
-    
-    st.markdown(
-        f'<a href="data:application/pdf;base64,{b64}" target="_blank" style="text-decoration:none;">'
-        f'<button style="width:100%; cursor:pointer; background-color:#28a745; color:white; border:none; padding:15px; border-radius:5px; font-size:16px;">'
-        f'🖨️ ABRIR COMANDA PARA IMPRIMIR'
-        f'</button></a>', unsafe_allow_html=True
-    )
-    
-    if st.button("🔄 Novo Pedido", key="btn_novo_pedido"):
-        del st.session_state.ultimo_pdf # Remove a referência do PDF
-        st.rerun() # Recarrega para voltar ao modo venda
-
-# --- BLOCO 3: CARRINHO VAZIO (E sem venda pendente) ---
+# --- BLOCO 3: CARRINHO VAZIO (Estado inicial) ---
 else:
     st.info("O carrinho está vazio. Adicione itens para iniciar um pedido.")
-            
-            
-            # Botão único com chave única
-            if st.button("🔄 Novo Pedido", key="btn_limpar_sessao"):
-                del st.session_state.ultimo_pdf
-                st.rerun()
 # --- TELA: CARDÁPIO ---
 elif aba == "Cardápio":
     st.header("⚙️ Gestão de Cardápio")
@@ -265,6 +262,7 @@ elif aba == "Promoções":
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.dataframe(pd.DataFrame(st.session_state.vendas))
+
 
 
 
