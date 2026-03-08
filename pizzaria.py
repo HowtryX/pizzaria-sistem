@@ -162,19 +162,55 @@ elif aba == "Clientes":
         salvar_dados('clientes.json', st.session_state.clientes)
         st.rerun()
 
-# --- TELA: PROMOÇÕES ---
+# --- TELA 3: PROMOÇÕES ---
 elif aba == "Promoções":
-    st.header("🎁 Promoções")
-    with st.expander("➕ Nova Promoção"):
-        nome = st.text_input("Nome")
-        qtd = st.number_input("Pizzas", min_value=1)
-        preco = st.number_input("Preço Total", min_value=0.0)
+    st.header("🎁 Criar Promoção Personalizada")
+    with st.expander("➕ Nova Promoção de Combo/Pizza"):
+        nome_promo = st.text_input("Nome da Promoção (ex: Combo Casal)")
+        # --- NOVO: Campo de Quantidade ---
+        qtd_pizzas = st.number_input("Quantidade de Pizzas no combo:", min_value=1, step=1, value=1)
+        s1 = st.selectbox("Sabor 1", list(st.session_state.pizzas.keys()), key="promo_s1")
+        s2 = st.selectbox("Sabor 2", ["Nenhum"] + list(st.session_state.pizzas.keys()), key="promo_s2")
+        borda = st.selectbox("Borda:", list(st.session_state.bordas.keys()), key="promo_borda")
+        bebs = st.multiselect("Bebidas:", list(st.session_state.bebidas.keys()), key="promo_bebs")
+        preco_final = st.number_input("Preço Promocional (R$):", min_value=0.0)
+        entrega_inclusa = st.checkbox("Incluir Taxa de Entrega?")
         if st.button("Salvar Promoção"):
-            st.session_state.promocoes.append({"nome": nome, "qtd_pizzas": qtd, "preco_promocional": preco, "itens": {}})
+            nova_promo = {
+                "nome": nome_promo or "Promoção Sem Nome",
+                "qtd_pizzas": qtd_pizzas, # Salva a quantidade
+                "itens": {"s1": s1, "s2": s2, "borda": borda, "bebidas": bebs},
+                "preco_promocional": preco_final,
+                "entrega_inclusa": entrega_inclusa
+            }
+            st.session_state.promocoes.append(nova_promo)
             salvar_dados('promocoes.json', st.session_state.promocoes)
+            st.success("Promoção criada!")
             st.rerun()
+    # Exibição das promoções existentes
+    st.subheader("Promoções Ativas")
+    for i, p in enumerate(st.session_state.promocoes):
+        # Proteção contra erros de chave com .get()
+        nome = p.get('nome', 'Promoção')
+        qtd = p.get('qtd_pizzas', 1) # Padrão 1 se não existir
+        itens = p.get('itens', {})
+        preco = p.get('preco_promocional', 0.0)
+        entrega = p.get('entrega_inclusa', False)
+        with st.container(border=True):
+            col1, col2 = st.columns([5, 1])
+            col1.markdown(f"### {nome}")
+            col1.write(f"🍕 *Quantidade:* {qtd} pizza(s) | Sabor: {itens.get('s1')} + {itens.get('s2')}")
+            col1.write(f"🥤 Bebidas: {', '.join(itens.get('bebidas', [])) if itens.get('bebidas') else 'Nenhuma'}")
+            col1.subheader(f"💰 Preço: R$ {preco:.2f}")
+    # Label de entrega
+            if entrega: col1.success("🚚 Entrega Grátis!")
+            if col2.button("🗑️", key=f"del_p_{i}"):
+                st.session_state.promocoes.pop(i)
+                salvar_dados('promocoes.json', st.session_state.promocoes)
+                st.rerun()
 
 # --- TELA: RELATÓRIO ---
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.dataframe(pd.DataFrame(st.session_state.vendas))
+
