@@ -183,7 +183,7 @@ if aba == "Cardápio":
         st.header("⚙️ Gestão de Cardápio")
         tab_p, tab_b, tab_be = st.tabs(["🍕 Pizzas", "🧀 Bordas", "🥤 Bebidas"])
 
-    def gerenciar(titulo, chave, arquivo, nome_col):
+ def gerenciar(titulo, chave, arquivo, nome_col):
         df = pd.DataFrame(list(st.session_state[chave].items()), columns=[nome_col, "Preço"])
         editado = st.data_editor(df, num_rows="dynamic", use_container_width=True)
         if st.button(f"💾 Salvar {titulo}"):
@@ -262,6 +262,7 @@ elif aba == "Promoções":
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.dataframe(pd.DataFrame(st.session_state.vendas))
+
 
 
 
