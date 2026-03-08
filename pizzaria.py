@@ -12,10 +12,12 @@ st.set_page_config(page_title="👑Imperio Rita🍕", layout="wide")
 conn = st.connection("gsheets", type=GSheetsConnection)
 
 def ler_dados(aba):
-    """Lê uma aba da planilha e retorna um DataFrame ou vazio se houver erro."""
     try:
-        # ttl=0 garante que ele busque o dado mais recente da planilha sempre
-        return conn.read(worksheet=aba, ttl=0)
+        df = conn.read(worksheet=aba, ttl=0)
+        # Converte todos os nomes de colunas para minúsculas
+        if not df.empty:
+            df.columns = [str(col).lower().strip() for col in df.columns]
+        return df
     except Exception:
         return pd.DataFrame()
 def salvar_dados_sheets(df, aba):
@@ -201,6 +203,7 @@ elif aba == "Relatório":
         st.metric("Total Faturado", f"R$ {df_v['total'].sum():.2f}")
     else:
         st.info("Nenhuma venda no sistema.")
+
 
 
 
