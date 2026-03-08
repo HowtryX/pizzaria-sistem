@@ -134,47 +134,37 @@ if aba == "PDV - Pedidos":
             st.subheader(f"💰 Total Geral: R$ {total_geral:.2f}")
 
            # --- Lógica de Finalização ---
-        if st.button("✅ FINALIZAR VENDA", key="btn_finalizar"):
-            if len(st.session_state.carrinho) > 0:
-                # 1. Salva nos dados
-                venda_final = {
-                    "data": datetime.now().strftime("%d/%m/%Y %H:%M"), 
-                    "cliente": c_sel.get('nome'), 
-                    "total": total_geral, 
-                    "itens": st.session_state.carrinho.copy()
-                }
+        if st.button("✅ FINALIZAR VENDA", key="btn_finalizar_venda"):
+                # Salva a venda
+                venda_final = {"data": datetime.now().strftime("%d/%m/%Y %H:%M"), "cliente": c_sel.get('nome'), "total": total_geral, "itens": st.session_state.carrinho.copy()}
                 st.session_state.vendas.append(venda_final)
                 salvar_dados('vendas.json', st.session_state.vendas)
                 
-                # 2. Gera o PDF
+                # Gera o PDF e armazena o caminho
                 st.session_state.ultimo_pdf = gerar_comanda_pdf(c_sel['nome'], st.session_state.carrinho, [], total_geral, "")
                 
-                # 3. Limpa carrinho e recarrega para mostrar o link
+                # Limpa o carrinho
                 st.session_state.carrinho = []
                 st.rerun()
-            else:
-                st.error("O carrinho está vazio!")
+        else:
+            st.info("O carrinho está vazio.")
 
-        # --- Bloco do Link (Fora do Botão de Finalizar) ---
-        if 'ultimo_pdf' in st.session_state and os.path.exists(st.session_state.ultimo_pdf):
+        # --- Lógica do Botão de Impressão (Exibido apenas se houver PDF) ---
+        if 'ultimo_pdf' in st.session_state:
             st.write("---")
             with open(st.session_state.ultimo_pdf, "rb") as f:
                 b64 = base64.b64encode(f.read()).decode()
             
-            # Link para ABRIR o PDF (target="_blank")
+            # target="_blank" abre em nova aba. Sem o atributo 'download', o navegador abre para visualização.
             st.markdown(
-                f'<a href="data:application/pdf;base64,{b64}" target="_blank" style="text-decoration:none;">'
-                f'<button style="width:100%; cursor:pointer; background-color:#28a745; color:white; border:none; padding:15px; border-radius:5px; font-size:16px;">'
+                f'<a href="data:application/pdf;base64,{b64}" target="_blank">'
+                f'<button style="width:100%; cursor:pointer; background-color:#28a745; color:white; border:none; padding:15px; border-radius:5px;">'
                 f'🖨️ ABRIR COMANDA PARA IMPRIMIR'
-                f'</button></a>', 
-                unsafe_allow_html=True
+                f'</button></a>', unsafe_allow_html=True
             )
             
-            # Botão para limpar e resetar
-            if st.button("🔄 Novo Pedido", key="btn_novo_pedido"):
-                # Remove o arquivo físico se quiser
-                if os.path.exists(st.session_state.ultimo_pdf):
-                    os.remove(st.session_state.ultimo_pdf)
+            # Botão único com chave única
+            if st.button("🔄 Novo Pedido", key="btn_limpar_sessao"):
                 del st.session_state.ultimo_pdf
                 st.rerun()
 # --- TELA: CARDÁPIO ---
@@ -262,6 +252,7 @@ elif aba == "Promoções":
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.dataframe(pd.DataFrame(st.session_state.vendas))
+
 
 
 
