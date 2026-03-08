@@ -34,7 +34,7 @@ def gerar_comanda_pdf(c_nome, lista_itens, bebs_dict, total, obs):
   pdf.cell(62, 5, txt=f"Data: {datetime.now().strftime('%d/%m %H:%M')}", ln=True)
   pdf.cell(62, 5, txt=f"Cliente: {c_nome}", ln=True)
   pdf.ln(2)
-    
+
     for i, item in enumerate(lista_itens):
         pdf.set_font("Arial", 'B', 9)
         pdf.cell(62, 5, txt=f"{i+1}. {item['s1']} + {item['s2']}", ln=True)
@@ -377,6 +377,7 @@ elif aba == "Promoções":
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.dataframe(pd.DataFrame(st.session_state.vendas))
+
 
 
 
