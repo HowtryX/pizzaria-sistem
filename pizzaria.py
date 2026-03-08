@@ -42,38 +42,7 @@ def gerar_comanda_pdf(c_nome, lista_itens, bebs_dict, total, obs):
         pdf.set_font("Arial", 'B', 9)
         pdf.cell(62, 5, txt=f"{i+1}. {item['s1']} + {item['s2']}", ln=True)
         pdf.set_font("Arial", size=9)
-        pdf.cell(62, 5, txt=f"Borda: {item['borda']} | R$ {item['preco']:.2f}", ln=True)
-        if item.get('bebidas'):
-            pdf.cell(62, 5, txt=f"Bebidas: {', '.join(item['bebidas'])}", ln=True)
-    
-    pdf.ln(2)
-    if bebs_dict:
-        pdf.cell(62, 5, txt=f"Bebidas: {', '.join(bebs_dict)}", ln=True)
-        
-    pdf.cell(62, 5, txt=f"Obs: {obs}", ln=True)
-    pdf.set_font("Arial", 'B', 11)
-    pdf.cell(62, 8, txt=f"TOTAL: R$ {total:.2f}", ln=True, align='R')
-    
-    caminho = "comanda_termica.pdf"
-    pdf.output(caminho)
-    return caminho
-
-# --- CONFIGURAÇÃO ---
-st.set_page_config(page_title="👑Imperio Rita🍕", layout="wide")
-
-# Inicialização com carga de arquivos
-if 'carrinho' not in st.session_state: st.session_state.carrinho = []
-st.session_state.clientes = carregar_dados('clientes.json', [])
-st.session_state.pizzas = carregar_dados('pizzas.json', {"Mussarela": 40.0})
-st.session_state.bebidas = carregar_dados('bebidas.json', {"Coca-Cola": 10.0})
-st.session_state.bordas = carregar_dados('bordas.json', {"Sem Borda": 0.0, "Catupiry": 10.0})
-st.session_state.promocoes = carregar_dados('promocoes.json', [])
-st.session_state.vendas = carregar_dados('vendas.json', [])
-
-# --- NAVEGAÇÃO ---
-aba = st.sidebar.radio("Navegação:", ["PDV - Pedidos", "Cardápio", "Promoções", "Clientes", "Relatório"])
-
-# --- TELA: PDV ---
+        # --- TELA: PDV ---
 if aba == "PDV - Pedidos":
     st.header("🛒 Terminal de Vendas")
     nome_busca = st.text_input("🔍 Buscar cliente:")
@@ -119,19 +88,35 @@ if aba == "PDV - Pedidos":
                 st.session_state.carrinho.append({"s1": s1_m, "s2": s2_m, "borda": borda_m, "bebidas": bebs_m, "preco": total_m, "tipo": "Manual", "entrega_gratis": False})
                 st.rerun()
 
-    # Certifique-se de que estas linhas abaixo estejam com 4 espaços de recuo
-    st.write("---")
-    st.write("### 🛒 Carrinho")
+        # --- SEÇÃO DO CARRINHO (Alinhada dentro do if c_sel) ---
+        st.write("---")
+        st.write("### 🛒 Carrinho")
 
-    # --- BLOCO 1: SE HOUVER PDF GERADO (Modo Impressão) ---
-    if 'ultimo_pdf' in st.session_state:
-        st.success("✅ Venda finalizada com sucesso!")
-        
-        with open(st.session_state.ultimo_pdf, "rb") as f:
-            b64 = base64.b64encode(f.read()).decode()
-        
-        st.markdown(
-            f'<a href="data:application/pdf;base64,{b64}" target="_blank" style="text-decoration:none;">'
+        if 'ultimo_pdf' in st.session_state:
+            st.success("✅ Venda finalizada!")
+            with open(st.session_state.ultimo_pdf, "rb") as f:
+                b64 = base64.b64encode(f.read()).decode()
+            st.markdown(f'<a href="data:application/pdf;base64,{b64}" target="_blank"><button style="width:100%; padding:15px;">🖨️ ABRIR COMANDA</button></a>', unsafe_allow_html=True)
+            if st.button("🔄 Novo Pedido", key="btn_resetar"):
+                del st.session_state.ultimo_pdf
+                st.rerun()
+        elif st.session_state.carrinho:
+            for i, item in enumerate(st.session_state.carrinho):
+                col_nome, col_preco, col_btn = st.columns([3, 1, 1])
+                col_nome.write(f"**{item.get('s1')}** / {item.get('s2')}")
+                col_preco.write(f"R$ {item.get('preco', 0):.2f}")
+                if col_btn.button("🗑️", key=f"del_{i}"):
+                    st.session_state.carrinho.pop(i)
+                    st.rerun()
+            
+            total_geral = sum(item.get('preco', 0) for item in st.session_state.carrinho)
+            st.subheader(f"💰 Total: R$ {total_geral:.2f}")
+            if st.button("✅ FINALIZAR VENDA", key="btn_finalizar"):
+                st.session_state.ultimo_pdf = gerar_comanda_pdf(c_sel['nome'], st.session_state.carrinho, [], total_geral, "")
+                st.session_state.carrinho = []
+                st.rerun()
+        else:
+            st.info("O carrinho está vazio.")
             f'<button style="width:100%; cursor:pointer; background-color:#28a745; color:white; border:none; padding:15px; border-radius:5px; font-size:16px;">'
             f'🖨️ ABRIR COMANDA PARA IMPRIMIR'
             f'</button></a>', unsafe_allow_html=True
@@ -263,6 +248,7 @@ elif aba == "Promoções":
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.dataframe(pd.DataFrame(st.session_state.vendas))
+
 
 
 
