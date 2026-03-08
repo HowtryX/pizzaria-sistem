@@ -149,14 +149,20 @@ if aba == "PDV - Pedidos":
                 st.rerun()
 
 # --- TELA: CARDÁPIO (GESTÃO) ---
+    elif aba == "Promoções":
+    st.header("🎁 Gestão de Promoções")
+    df_promo = ler_dados("promocoes")
+    ed_promo = st.data_editor(df_promo, num_rows="dynamic", use_container_width=True)
+    if st.button("💾 Salvar Promoções"):
+        salvar_dados_sheets(ed_promo, "promocoes")
+        st.rerun()
 # --- TELA: CARDÁPIO (GESTÃO) ---
 elif aba == "Cardápio":
     st.header("⚙️ Gestão de Cardápio")
-    # Adicionada a aba de Bebidas aqui
+    # Agora incluindo as 3 abas corretamente
     aba_p, aba_b, aba_be = st.tabs(["🍕 Pizzas", "🧀 Bordas", "🥤 Bebidas"])
     
     with aba_p:
-        # IMPORTANTE: Use exatamente o nome dos cabeçalhos da planilha
         df_p = ler_dados("pizzas")
         ed_p = st.data_editor(df_p, num_rows="dynamic", use_container_width=True)
         if st.button("💾 Salvar Pizzas"):
@@ -190,4 +196,5 @@ elif aba == "Relatório":
         st.metric("Total Faturado", f"R$ {df_v['total'].sum():.2f}")
     else:
         st.info("Nenhuma venda no sistema.")
+
 
