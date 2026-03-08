@@ -121,14 +121,12 @@ if aba == "PDV - Pedidos":
 
         st.write("---")
         st.write("### 🛒 Carrinho")
-        if st.session_state.carrinho:
-            for i, item in enumerate(st.session_state.carrinho):
-                col_nome, col_preco, col_btn = st.columns([3, 1, 1])
-                col_nome.write(f"**{item.get('s1')}** / {item.get('s2')} ({item.get('borda')})")
-                col_preco.write(f"R$ {item.get('preco', 0):.2f}")
-                if col_btn.button("🗑️", key=f"del_{i}"):
-                    st.session_state.carrinho.pop(i)
-                    st.rerun()
+        
+        # Só habilita a finalização se houver itens no carrinho
+        if not st.session_state.carrinho:
+            st.warning("O carrinho está vazio. Adicione itens para finalizar.")
+        else:
+            # ... (código dos itens do carrinho e botão de exclusão) ...
 
             total_pizzas = sum(item.get('preco', 0) for item in st.session_state.carrinho)
             taxa = st.number_input("Taxa de Entrega (R$):", value=0.0 if any(i.get('entrega_gratis') for i in st.session_state.carrinho) else 8.0)
@@ -136,17 +134,36 @@ if aba == "PDV - Pedidos":
             st.subheader(f"💰 Total Geral: R$ {total_geral:.2f}")
 
             if st.button("✅ FINALIZAR VENDA"):
-                # 1. Salva nos dados
-                    venda_final = {"data": datetime.now().strftime("%d/%m/%Y %H:%M"), "cliente": c_sel.get('nome'), "total": total_geral, "itens": st.session_state.carrinho.copy()}
-                    st.session_state.vendas.append(venda_final)
-                    salvar_dados('vendas.json', st.session_state.vendas)
+                venda_final = {"data": datetime.now().strftime("%d/%m/%Y %H:%M"), "cliente": c_sel.get('nome'), "total": total_geral, "itens": st.session_state.carrinho.copy()}
+                st.session_state.vendas.append(venda_final)
+                salvar_dados('vendas.json', st.session_state.vendas)
                 
-                # 2. Gera o PDF
-                    st.session_state.ultimo_pdf = gerar_comanda_pdf(c_sel['nome'], st.session_state.carrinho, [], total_geral, "")
+                # Gera o PDF
+                st.session_state.ultimo_pdf = gerar_comanda_pdf(c_sel['nome'], st.session_state.carrinho, [], total_geral, "")
                 
-                # 3. Limpa carrinho e recarrega
-                    st.session_state.carrinho = []
-                    st.rerun()
+                # Limpa carrinho e recarrega
+                st.session_state.carrinho = []
+                st.rerun()
+
+    # Bloco para exibir o link de impressão/visualização
+    if 'ultimo_pdf' in st.session_state:
+        st.write("---")
+        with open(st.session_state.ultimo_pdf, "rb") as f:
+            b64 = base64.b64encode(f.read()).decode()
+        
+        # target="_blank" força a abertura em nova aba. 
+        # Removi o atributo 'download' para o navegador tratar como visualização.
+        st.markdown(
+            f'<a href="data:application/pdf;base64,{b64}" target="_blank" style="text-decoration:none;">'
+            f'<button style="width:100%; cursor:pointer; background-color:#007bff; color:white; border:none; padding:15px; border-radius:5px; font-size:16px;">'
+            f'🖨️ ABRIR COMANDA PARA IMPRIMIR'
+            f'</button></a>', 
+            unsafe_allow_html=True
+        )
+        
+        if st.button("🔄 Novo Pedido"):
+            del st.session_state.ultimo_pdf
+            st.rerun()
 
     # --- CORREÇÃO: O LINK DEVE FICAR FORA DO BOTÃO DE FINALIZAR ---
         if 'ultimo_pdf' in st.session_state:
@@ -244,6 +261,7 @@ elif aba == "Promoções":
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.dataframe(pd.DataFrame(st.session_state.vendas))
+
 
 
 
