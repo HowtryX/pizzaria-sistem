@@ -8,12 +8,15 @@ import base64
 
 # --- FUNÇÕES DE SEGURANÇA PARA DADOS ---
 def carregar_dados(arquivo, padrao):
-  if os.path.exists(arquivo):
-    try:
-      with open(arquivo, 'r', encoding='utf-8') as f: return json.load(f)
-      except:
-          return padrao
-         
+    """Carrega dados de um arquivo JSON com tratamento de erro."""
+    if os.path.exists(arquivo):
+        try:
+            with open(arquivo, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except (json.JSONDecodeError, IOError):
+            # Se o arquivo estiver corrompido ou inacessível, retorna o padrão
+            return padrao
+    return padrao
 def salvar_dados(arquivo, dados):
   # Salva em arquivo temporário antes de substituir para evitar corrupção
   temp_file = arquivo + '.tmp'
@@ -357,6 +360,7 @@ salvar_dados('promocoes.json', st.session_state.promocoes)
 eliflif aba == "Relatório":
    st.header("📊 Vendas")
    st.dataframe(pd.DataFrame(st.session_state.vendas))
+
 
 
 
