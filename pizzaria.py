@@ -79,7 +79,7 @@ if aba == "PDV - Pedidos":
 nome_busca = st.text_input("🔍 Buscar cliente:")
 resultados = [c for c in st.session_state.clientes if nome_busca.lower() in c.get('nome', '').lower()]
 
-    # Selectbox de cliente
+  # Selectbox de cliente
   c_sel = st.selectbox("Selecione o cliente:", resultados, format_func=lambda x: x.get('nome', 'Sem Nome')) if resultados else None
 
     if not resultados and nome_busca:
@@ -376,6 +376,7 @@ elif aba == "Promoções":
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.dataframe(pd.DataFrame(st.session_state.vendas))
+
 
 
 
