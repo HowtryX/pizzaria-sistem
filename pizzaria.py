@@ -88,7 +88,7 @@ resultados = [c for c in st.session_state.clientes if nome_busca.lower() in c.ge
     if c_sel:
       st.info(f"👤 Cliente: {c_sel.get('nome')} | 📍 {c_sel.get('endereco', 'Endereço não cadastrado')}")
       
-        # 2. SELEÇÃO DE ITENS
+      # 2. SELEÇÃO DE ITENS
       st.subheader("➕ Adicionar ao Pedido")
           tab_promo, tab_manual = st.tabs(["🎁 Combos/Promoções", "🍕 Seleção Manual"])
 
@@ -376,6 +376,7 @@ elif aba == "Promoções":
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.dataframe(pd.DataFrame(st.session_state.vendas))
+
 
 
 
