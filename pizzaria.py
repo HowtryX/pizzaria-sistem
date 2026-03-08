@@ -99,25 +99,25 @@ resultados = [c for c in st.session_state.clientes if nome_busca.lower() in c.ge
                   st.session_state.promocoes,
                       format_func=lambda x: f"{x.get('nome')} - R$ {x.get('preco_promocional', 0):.2f}",
                 key="sb_promo_pdv"
-                )
-                
-                if st.button("🚀 Aplicar Este Combo", key="btn_aplicar_promo"):
-                    qtd = p_sel.get('qtd_pizzas', 1)
-                    preco_unitario = p_sel.get('preco_promocional', 0.0) / qtd
-                    
-                    for _ in range(qtd):
-                        st.session_state.carrinho.append({
-                            "s1": p_sel.get('itens', {}).get('s1', 'Mussarela'), 
-                            "s2": p_sel.get('itens', {}).get('s2', 'Nenhum'), 
-                            "borda": p_sel.get('itens', {}).get('borda', 'Sem Borda'), 
-                            "preco": preco_unitario,
-                            "entrega_gratis": p_sel.get('entrega_inclusa', False),
-                            "tipo": "Promoção"
-                        })
-                    st.success(f"✅ Combo '{p_sel.get('nome')}' adicionado!")
-                    st.rerun()
-            else:
-                st.info("Nenhuma promoção cadastrada.")
+              )
+              
+              if st.button("🚀 Aplicar Este Combo", key="btn_aplicar_promo"):
+                qtd = p_sel.get('qtd_pizzas', 1)
+                preco_unitario = p_sel.get('preco_promocional', 0.0) / qtd
+                
+                for _ in range(qtd):
+                  st.session_state.carrinho.append({
+                    "s1": p_sel.get('itens', {}).get('s1', 'Mussarela'),
+                    "s2": p_sel.get('itens', {}).get('s2', 'Nenhum'),
+                    "borda": p_sel.get('itens', {}).get('borda', 'Sem Borda'),
+                    "preco": preco_unitario,
+                    "entrega_gratis": p_sel.get('entrega_inclusa', False),
+                    "tipo": "Promoção"
+                  })
+                  st.success(f"✅ Combo '{p_sel.get('nome')}' adicionado!")
+                  st.rerun()
+              else:
+                st.info("Nenhuma promoção cadastrada.")
 
         with tab_manual:
             c1, c2 = st.columns(2)
@@ -376,6 +376,7 @@ elif aba == "Promoções":
 elif aba == "Relatório":
     st.header("📊 Vendas")
     st.dataframe(pd.DataFrame(st.session_state.vendas))
+
 
 
 
